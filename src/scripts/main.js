@@ -4,6 +4,8 @@ import { initConfirmStep } from "./confirmStep.js";
 import { initMusicPlayer } from "./musicPlayer.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
+import { initTiltEffect } from "./tiltEffect.js";
+import { initFlowerIntro } from "./flowerIntro.js";
 import { burstConfetti } from "./confetti.js";
 
 /** Isi semua elemen [data-key] dengan teks dari content.js */
@@ -112,6 +114,8 @@ function init() {
     }],
     ["konfirmasi", () => setupConfirm(pageFlow)],
     ["efek surat", initLetterScrub],
+    ["efek tilt foto", initTiltEffect],
+    ["animasi bunga pembuka", initFlowerIntro],
   ];
 
   steps.forEach(([label, fn]) => {
