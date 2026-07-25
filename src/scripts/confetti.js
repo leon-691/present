@@ -1,3 +1,5 @@
+import { isMotionReduced } from "./motionPreference.js";
+
 /**
  * Confetti burst ringan pakai <canvas>, tanpa library eksternal.
  * Dipakai sekali sebagai "momen besar" saat kode berhasil ditebak --
@@ -7,7 +9,7 @@
 const COLORS = ["#3E63DD", "#6C8EF0", "#FFC85C", "#FFB4A8"];
 
 export function burstConfetti(targetEl, { count = 60 } = {}) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (isMotionReduced()) return;
 
   const canvas = document.createElement("canvas");
   canvas.setAttribute("aria-hidden", "true");

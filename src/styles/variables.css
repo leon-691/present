@@ -9,12 +9,13 @@
   --color-bg-soft: #FFF1DC;
   --color-surface: #FFFFFF;
   --color-text: #4A362B;
-  --color-text-soft: #8A7368;
+  --color-text-soft: #7A6155; /* digelapkan dari #8A7368 -- versi lama rasio kontrasnya ~4.2:1 di atas --color-bg, di bawah ambang AA 4.5:1 untuk teks normal */
 
   /* --- Aksen (biru, mengikuti referensi) --- */
   --color-primary: #3E63DD;       /* biru utama: tombol, headline, teks pesan */
   --color-primary-dark: #2C48B0;  /* hover/pressed */
   --color-primary-light: #6C8EF0; /* biru muda: badan maskot */
+  --color-ink: #3A3457;           /* "tinta" khusus halaman surat -- indigo hangat, beda dari biru situs supaya surat terasa punya identitas sendiri */
   --color-secondary: #FFC85C;     /* kuning marigold: aksen kedua, washi tape */
   --color-mascot-mouth: #FF8577;  /* mulut maskot, kontras dari biru */
   --color-blush: #FFB4A8;         /* blush hangat: dekorasi, BUKAN dominan */
@@ -22,6 +23,22 @@
   /* --- Netral pendukung --- */
   --color-border: #F0DFC8;
   --color-shadow: rgba(74, 54, 43, 0.12);
+
+  /* --- Atmosfer (aurora / mesh gradient / glow / glass) ---
+     Dipakai di .atmosphere (background berlapis) & elemen glass-morphism.
+     Semua RGB terpisah dari hex di atas supaya bisa dipakai dengan
+     opacity berbeda-beda (rgba()) tanpa nulis ulang warnanya. */
+  --aurora-1: 255, 200, 168;   /* peach hangat */
+  --aurora-2: 173, 196, 255;   /* biru langit lembut, senada --color-primary-light */
+  --aurora-3: 255, 216, 140;   /* kuning senada --color-secondary */
+  --aurora-4: 255, 180, 200;   /* pink lembut, senada --color-blush */
+  --glow-primary: rgba(62, 99, 221, 0.28);
+  --glow-secondary: rgba(255, 200, 92, 0.24);
+  --noise-opacity: 0.05;
+  --glass-bg: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-blur: 18px;
+  --glass-blur-soft: 10px;
 
   /* --- Tipografi --- */
   --font-display: 'Fredoka', system-ui, sans-serif;
@@ -53,21 +70,51 @@
   /* --- Layout --- */
   --content-width: 460px;
 
-  /* --- Animasi --- */
+  /* --- Animasi ---
+     --ease-page tetap dipakai sbg default kalau sebuah .view TIDAK
+     dikasih data-transition spesifik (lihat sections.css & pageFlow.js
+     utk sistem transisi bervariasi per halaman). */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-page: cubic-bezier(0.34, 1.35, 0.64, 1);
   --ease-press: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-dream: cubic-bezier(0.22, 1, 0.36, 1);   /* reveal lembut, dipakai blur/mask reveal */
+  --ease-liquid: cubic-bezier(0.65, 0, 0.35, 1);  /* gerak "mengalir", dipakai transisi liquid */
   --dur-fast: 200ms;
   --dur-base: 450ms;
   --dur-slow: 800ms;
   --dur-page: 650ms;
+  --dur-atmosphere: 22s; /* siklus aurora/mesh gradient, lambat & tidak mengganggu */
 }
 
+/* ==========================================================================
+   MOTION GOVERNANCE
+   ==========================================================================
+   Prinsip: gerak DEKORATIF (float mascot, aurora, bunga jatuh, cursor glow,
+   dst) boleh dimatikan sepenuhnya saat reduced-motion. Gerak ESENSIAL
+   (transisi antar-halaman, sorot-baca surat) tidak boleh dihilangkan total
+   -- itu bagian dari cara pengguna tahu "halaman sudah berpindah". Ia
+   cukup disederhanakan (durasi lebih singkat, tanpa depth 3D).
+
+   `motionPreference.js` menambahkan class `motion-reduced`/`motion-full`
+   ke <html> berdasarkan: pilihan manual pengguna (kalau ada) > sinyal OS.
+   Class ini SENGAJA dibuat lebih spesifik daripada media query di bawah,
+   supaya kalau pengguna memilih "Penuh" secara sadar (mis. karena sinyal
+   reduced-motion dari HP-nya sebenarnya cuma efek mode hemat baterai,
+   bukan preferensi asli), pilihan itu menang. Media query di bawah ini
+   cuma jaring pengaman kalau JS belum sempat jalan atau mati total. */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --dur-fast: 0ms;
-    --dur-base: 0ms;
-    --dur-slow: 0ms;
-    --dur-page: 0ms;
+    --dur-page: 260ms;
+    --dur-atmosphere: 0ms;
   }
+}
+
+html.motion-reduced {
+  --dur-page: 260ms;
+  --dur-atmosphere: 0ms;
+}
+
+html.motion-full {
+  --dur-page: 650ms;
+  --dur-atmosphere: 22s;
 }

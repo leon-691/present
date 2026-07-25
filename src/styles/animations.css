@@ -45,6 +45,126 @@
   animation: number-flip 700ms var(--ease-out-soft) both;
 }
 
+/* ==========================================================================
+   SISTEM TRANSISI BERVARIASI PER HALAMAN
+   ==========================================================================
+   `.view` di components.css TIDAK diubah -- itu tetap jadi transisi
+   "depth" default (crossfade + perspective/scale/rotateX) persis
+   seperti semula, dipakai halaman yang tidak diberi modifier.
+   Modifier di bawah ini murni ADITIF: tinggal ditambah sebagai class
+   kedua di HTML (mis. class="view view--mask"), tidak menyentuh
+   pageFlow.js sama sekali -- state is-active/is-leaving yang dipakai
+   JS untuk tahu halaman mana yang aktif tetap persis sama. */
+
+.view--sweep,
+.view--mask,
+.view--blur,
+.view--liquid {
+  transform: none; /* override transform depth default -- tiap varian punya gerak sendiri di bawah */
+}
+
+/* --- Sweep: cahaya lembut menyapu masuk, dipakai utk momen "sapaan" --- */
+.view--sweep {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition: opacity var(--dur-page) var(--ease-dream),
+              transform var(--dur-page) var(--ease-dream);
+}
+.view--sweep.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.view--sweep.is-leaving {
+  opacity: 0;
+  transform: translateY(-10px) scale(1.01);
+}
+.view--sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  transform: translateX(-130%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.view--sweep.is-active::after {
+  animation: sweep-flash var(--dur-page) var(--ease-dream) both;
+}
+@keyframes sweep-flash {
+  0% { transform: translateX(-130%); opacity: 0; }
+  35% { opacity: 0.8; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+
+/* --- Mask reveal: tirai membuka dari tengah, dipakai utk konfirmasi & surat --- */
+.view--mask {
+  opacity: 0;
+  clip-path: inset(0 42% 0 42% round 28px);
+  transition: opacity var(--dur-page) var(--ease-dream),
+              clip-path var(--dur-page) var(--ease-dream);
+}
+.view--mask.is-active {
+  opacity: 1;
+  clip-path: inset(0 0 0 0 round 0px);
+}
+.view--mask.is-leaving {
+  opacity: 0;
+  clip-path: inset(0 42% 0 42% round 28px);
+}
+
+/* --- Blur reveal: muncul dari kabut, dipakai utk momen reveal umur & lagu --- */
+.view--blur {
+  opacity: 0;
+  filter: blur(16px);
+  transform: scale(1.035);
+  transition: opacity var(--dur-page) var(--ease-dream),
+              filter var(--dur-page) var(--ease-dream),
+              transform var(--dur-page) var(--ease-dream);
+}
+.view--blur.is-active {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+.view--blur.is-leaving {
+  opacity: 0;
+  filter: blur(12px);
+  transform: scale(0.97);
+}
+/* Blur besar sedikit berat di GPU kelas bawah -- disederhanakan jadi
+   fade polos di device tier rendah (tetap beranimasi, cuma tanpa
+   filter), bukan dimatikan. */
+html.tier-low .view--blur {
+  filter: none;
+  transform: none;
+}
+html.tier-low .view--blur.is-active,
+html.tier-low .view--blur.is-leaving {
+  filter: none;
+  transform: none;
+}
+
+/* --- Liquid: gerak organik mengalir, dipakai utk galeri kenangan --- */
+.view--liquid {
+  opacity: 0;
+  border-radius: 44% 56% 52% 48% / 48% 44% 56% 52%;
+  transform: scale(0.92) rotate(-1.5deg);
+  transition: opacity var(--dur-page) var(--ease-liquid),
+              border-radius var(--dur-page) var(--ease-liquid),
+              transform var(--dur-page) var(--ease-liquid);
+}
+.view--liquid.is-active {
+  opacity: 1;
+  border-radius: 0;
+  transform: scale(1) rotate(0deg);
+}
+.view--liquid.is-leaving {
+  opacity: 0;
+  border-radius: 48% 52% 44% 56% / 52% 48% 44% 56%;
+  transform: scale(1.05) rotate(1.5deg);
+}
+
 /* --- Animasi bunga pembuka --- */
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }

@@ -64,6 +64,15 @@ src/
     letterScrub.js             efek sorotan baca di surat panjang
     musicPlayer.js               widget musik mengambang
     confetti.js                    efek konfeti
+    motionPreference.js            satu sumber kebenaran preferensi motion
+                                    (gabung sinyal OS + toggle manual "Efek
+                                    Visual") -- modul lain baca isReduced()
+                                    dari sini, bukan matchMedia sendiri-sendiri
+    deviceTier.js                   heuristik ringan utk jumlah partikel ambient
+    seededRandom.js                 rotasi polaroid/tape yg konsisten per foto
+    ambientBackground.js            partikel bokeh canvas di lapisan atmosfer
+    cursorGlow.js                   cursor glow + magnetic button (desktop)
+    touchTilt.js                    padanan tilt utk layar sentuh + gyro ambient
   data/content.js         SEMUA teks & konfigurasi -- edit di sini saja
 assets/
   images/                 taruh foto di sini
@@ -74,3 +83,22 @@ assets/
 
 Semua warna & font ada di `src/styles/variables.css`, di bagian atas
 sendiri. Ubah nilai hex-nya, otomatis berlaku ke seluruh halaman.
+
+## 6. Dependency dari CDN
+
+Selain Google Fonts (sudah ada dari awal), situs ini sekarang juga
+memuat **GSAP** dari CDN (`cdnjs`) untuk satu efek: animasi hitung
+umur naik di halaman reveal. Kalau CDN gagal dimuat (mis. tidak ada
+internet), situs tetap jalan normal -- angka umur langsung tampil
+tanpa animasi hitung, tidak ada yang error. Tidak perlu `npm install`
+apa pun; situs ini tetap murni HTML/CSS/JS tanpa build step.
+
+## 7. Soal animasi & Android
+
+Ada tombol kecil (✨) di pojok kanan atas -- itu toggle "Efek Visual"
+dengan 3 keadaan: Otomatis / Penuh / Hemat. Alasannya: banyak HP
+Android melaporkan preferensi "kurangi gerakan" ke browser bukan
+karena penggunanya minta itu, tapi karena mode hemat baterai OS.
+Kalau animasi terasa mati di suatu HP, coba ketuk tombol ini sampai
+ke mode "Penuh". Detail teknisnya ada di komentar
+`src/scripts/motionPreference.js`.

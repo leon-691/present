@@ -23,6 +23,9 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  --magnet-x: 0px;
+  --magnet-y: 0px;
+  transform: translate(var(--magnet-x), var(--magnet-y));
   transition: transform 150ms var(--ease-press),
               box-shadow 150ms var(--ease-press),
               background var(--dur-fast) var(--ease-out-soft);
@@ -44,12 +47,12 @@
 
 .btn:hover {
   background: var(--color-primary-dark);
-  transform: translateY(-2px);
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(-2px);
   box-shadow: 0 7px 0 var(--color-primary-dark), var(--shadow-pop);
 }
 
 .btn:active {
-  transform: translateY(3px);
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(3px);
   box-shadow: 0 2px 0 var(--color-primary-dark);
 }
 
@@ -67,8 +70,16 @@
 }
 
 .btn--ghost:active {
-  transform: translateY(1px) scale(0.97);
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(1px) scale(0.97);
   box-shadow: none;
+}
+
+/* Saat magnet aktif (lihat cursorGlow.js), tambah transisi khusus utk
+   --magnet-x/-y supaya pull-nya terasa lentur, bukan langsung nempel */
+.btn.is-magnet-active {
+  transition: transform 220ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-press),
+              background var(--dur-fast) var(--ease-out-soft);
 }
 
 /* --- Halaman (view) --- 
@@ -301,18 +312,103 @@
   50% { height: 14px; }
 }
 
-/* --- Foto kenangan (satu foto besar per halaman) --- */
+/* --- Tombol toggle "Efek Visual" ---
+   Kecil & tidak mencolok (pojok kanan atas) -- gaya glass morphism
+   supaya menyatu dengan lapisan atmosfer baru. Tiga keadaan (lihat
+   motionPreference.js): otomatis (ikut sinyal OS) / penuh / hemat. */
+.motion-toggle {
+  position: fixed;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: 51;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 150ms var(--ease-press), opacity 200ms var(--ease-out-soft);
+  opacity: 0.75;
+}
+
+.motion-toggle:hover,
+.motion-toggle:focus-visible {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.motion-toggle:active {
+  transform: scale(0.94);
+}
+
+.motion-toggle[data-state="reduced"] {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+/* --- Cursor glow (desktop, lihat cursorGlow.js) --- */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 260px;
+  margin-left: -130px;
+  margin-top: -130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-primary), transparent 70%);
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out-soft);
+  will-change: transform;
+}
+
+.cursor-glow.is-visible {
+  opacity: 1;
+}
+
+/* --- Foto kenangan: bingkai gaya polaroid + washi tape ---
+   Struktur: .photo-card (bingkai polaroid, rotasi statis dari
+   --polaroid-rotate) > .washi-tape (dekorasi selotip di sudut) +
+   .photo-card__tilt (lapisan tilt dinamis dari tiltEffect.js /
+   touchTilt.js -- DIPISAH dari .photo-card supaya rotasi statis
+   polaroid & rotasi dinamis tilt tidak saling menimpa, karena
+   keduanya sama-sama pakai `transform`). */
 .photo-card {
+  --polaroid-rotate: 0deg;
   width: 100%;
   max-width: 300px;
+  position: relative;
+  background: var(--color-surface, #fff);
+  padding: 14px 14px 38px;
+  border-radius: 6px;
+  transform: rotate(var(--polaroid-rotate));
+  box-shadow:
+    0 2px 3px var(--color-shadow),
+    0 16px 30px -16px var(--color-shadow),
+    0 30px 46px -28px rgba(74, 54, 43, 0.28);
+}
+
+.photo-card__tilt {
   transform-style: preserve-3d;
   transition: transform 200ms var(--ease-out-soft);
   will-change: transform;
 }
 
+.photo-card.is-touch-active .photo-card__tilt {
+  transition: none; /* selama jari digeser, ikuti langsung tanpa jeda transisi */
+}
+
 .photo-card__frame {
   aspect-ratio: 4 / 5;
-  border-radius: var(--radius-md);
+  border-radius: 3px;
   background: var(--color-bg-soft);
   display: flex;
   align-items: center;
@@ -322,7 +418,6 @@
   text-align: center;
   padding: var(--space-xs);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
 }
 
 .photo-card__frame img {
@@ -331,15 +426,44 @@
   object-fit: cover;
 }
 
-/* --- Satu kalimat kenangan (dipasangkan dengan foto di atasnya) --- */
+/* Selotip washi -- posisi & rotasi datang dari --tape-rotate/--tape-left
+   (di-set inline per foto lewat seededRandom.js di main.js, supaya
+   konsisten tiap render, bukan berubah-ubah). Garis-garis tipis di
+   dalamnya mensimulasikan tekstur kain selotip washi asli. */
+.washi-tape {
+  --tape-rotate: 0deg;
+  --tape-left: 40%;
+  position: absolute;
+  top: -14px;
+  left: var(--tape-left);
+  width: 64px;
+  height: 26px;
+  transform: translateX(-50%) rotate(var(--tape-rotate));
+  background: repeating-linear-gradient(
+    100deg,
+    rgba(255, 216, 140, 0.75) 0 6px,
+    rgba(255, 200, 168, 0.75) 6px 12px
+  );
+  opacity: 0.85;
+  box-shadow: 0 3px 6px rgba(74, 54, 43, 0.15);
+  z-index: 2;
+}
+
+.washi-tape--right {
+  left: auto;
+  right: calc(var(--tape-left) * -1 + 100%);
+}
+
+/* --- Satu kalimat kenangan: catatan tempel tulisan tangan --- */
 .memory-line {
   font-size: var(--fs-lg);
-  font-family: var(--font-display);
-  font-weight: 500;
-  color: var(--color-primary);
-  max-width: 20ch;
-  margin: 0 auto;
-  padding: 0 var(--space-sm);
+  font-family: var(--font-accent);
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  max-width: 22ch;
+  margin: var(--space-sm) auto 0;
+  padding: var(--space-xs) var(--space-sm) 0.35em;
+  transform: rotate(-1.2deg);
 }
 
 /* --- Surat panjang (scroll internal di dalam satu halaman) ---
@@ -359,9 +483,27 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  background: var(--color-bg);
-  padding: var(--space-xs) 0 var(--space-sm);
+  background: linear-gradient(180deg, var(--color-bg-soft) 75%, transparent);
+  padding: var(--space-md) 0 var(--space-sm);
   text-align: center;
+  color: var(--color-ink);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 700ms var(--ease-dream), transform 700ms var(--ease-dream);
+}
+
+.letter-heading.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.letter-heading::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin: var(--space-xs) auto 0;
+  background: linear-gradient(90deg, transparent, var(--color-secondary), transparent);
 }
 
 .letter-body {
@@ -371,17 +513,21 @@
 
 .letter-sentence {
   font-size: var(--fs-base);
-  line-height: 1.7;
+  line-height: 1.8;
   color: var(--color-text-soft);
   opacity: 0.4;
   margin: 0 0 8svh;
   transition: color var(--dur-base) var(--ease-out-soft),
-              opacity var(--dur-base) var(--ease-out-soft);
+              opacity var(--dur-base) var(--ease-out-soft),
+              text-shadow var(--dur-slow) var(--ease-out-soft);
 }
 
 .letter-sentence.is-active {
-  color: var(--color-primary);
+  color: var(--color-ink);
   opacity: 1;
+  /* cahaya hangat lembut di belakang kalimat yang lagi dibaca --
+     seperti disorot cahaya lilin, bukan cuma ganti warna teks */
+  text-shadow: 0 0 30px rgba(var(--aurora-3), 0.4);
 }
 
 .letter-sentence.is-typing::after {
@@ -397,6 +543,19 @@
 
 .letter-sentence:last-child {
   margin-bottom: var(--space-lg);
+}
+
+/* --- Micro-interaction "menyegel surat" pada tombol penutup surat --
+   Cincin cahaya hangat memancar sekali saat tombol "kembali ke awal"
+   ditekan (lihat letterScrub.js), sebelum halaman pindah. */
+.btn.is-sealing {
+  animation: seal-pulse 650ms var(--ease-out-soft);
+}
+
+@keyframes seal-pulse {
+  0% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 0 rgba(255, 200, 92, 0.45); }
+  45% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 16px rgba(255, 200, 92, 0.22); }
+  100% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 0 rgba(255, 200, 92, 0); }
 }
 
 /* --- Confirm section (yes/no + reaksi) --- */

@@ -1,10 +1,12 @@
+import { isMotionReduced } from "./motionPreference.js";
+
 /**
  * Animasi bunga berjatuhan saat situs pertama kali dibuka -- momen
  * "wow" singkat sebelum pengunjung mulai berinteraksi. Sekali putar
  * lalu bersih-bersih sendiri dari DOM.
  */
 export function initFlowerIntro() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (isMotionReduced()) return;
 
   const COLORS = ["var(--color-blush)", "var(--color-primary-light)", "var(--color-secondary)"];
   const COUNT = 16;

@@ -5,8 +5,14 @@ import { initMusicPlayer } from "./musicPlayer.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
 import { initTiltEffect } from "./tiltEffect.js";
+import { initTouchTilt } from "./touchTilt.js";
 import { initFlowerIntro } from "./flowerIntro.js";
 import { burstConfetti } from "./confetti.js";
+import { initMotionPreference, initMotionToggle, isMotionReduced } from "./motionPreference.js";
+import { detectDeviceTier } from "./deviceTier.js";
+import { seededRange } from "./seededRandom.js";
+import { initAmbientBackground } from "./ambientBackground.js";
+import { initCursorGlow } from "./cursorGlow.js";
 
 /** Isi semua elemen [data-key] dengan teks dari content.js */
 function populateStaticText() {
@@ -30,6 +36,11 @@ function populateStaticText() {
  * grid foto terpisah dari teks). Disisipkan ke placeholder-nya di
  * HTML supaya urutan halaman di DOM tetap benar (dipakai pageFlow
  * untuk urutan navigasi).
+ *
+ * Tiap foto dibungkus gaya polaroid + selotip washi. Rotasi &
+ * posisi selotip "acak" tapi konsisten (seeded dari path foto)
+ * lewat seededRandom.js -- supaya kemiringannya selalu sama tiap
+ * kali halaman dirender ulang, bukan berubah-ubah tiap reload.
  */
 function renderMemoryPages() {
   const placeholder = document.querySelector("[data-memory-pages]");
@@ -39,13 +50,22 @@ function renderMemoryPages() {
 
   content.memories.forEach(({ src, line }, i) => {
     const view = document.createElement("section");
-    view.className = "view section--memory";
+    view.className = "view view--liquid section--memory";
     view.id = `kenangan-${i + 1}`;
+
+    const rotate = seededRange(src, -6, 6).toFixed(2);
+    const tapeRotate = seededRange(`${src}:tape`, -16, 16).toFixed(2);
+    const tapeLeft = seededRange(`${src}:tape-pos`, 20, 60).toFixed(1);
+    const tapeSide = i % 2 === 0 ? "left" : "right";
+
     view.innerHTML = `
-      <figure class="photo-card">
-        <div class="photo-card__frame">
-          <img src="${src}" alt="${line}" loading="lazy"
-               onerror="this.closest('.photo-card__frame').innerHTML='Taruh foto di assets/images/'" />
+      <figure class="photo-card" style="--polaroid-rotate:${rotate}deg">
+        <span class="washi-tape washi-tape--${tapeSide}" style="--tape-rotate:${tapeRotate}deg; --tape-left:${tapeLeft}%" aria-hidden="true"></span>
+        <div class="photo-card__tilt">
+          <div class="photo-card__frame">
+            <img src="${src}" alt="${line}" loading="lazy"
+                 onerror="this.closest('.photo-card__frame').innerHTML='Taruh foto di assets/images/'" />
+          </div>
         </div>
       </figure>
       <p class="memory-line">${line}</p>
@@ -77,8 +97,29 @@ function setupGate(music, pageFlow) {
 }
 
 function setupConfirm(pageFlow) {
+  const revealView = document.querySelector("#reveal");
   const revealNumberEl = document.querySelector("[data-reveal-number]");
+  // Set langsung sebagai default aman -- dipakai kalau GSAP gagal
+  // dimuat (mis. CDN diblokir) atau motion sedang direduksi. Animasi
+  // hitung naik di bawah cuma progressive enhancement di atas ini.
   if (revealNumberEl) revealNumberEl.textContent = content.age;
+
+  function animateAgeCountUp() {
+    if (!revealNumberEl || typeof window.gsap === "undefined" || isMotionReduced()) return;
+    const targetAge = Number(content.age);
+    if (!Number.isFinite(targetAge)) return;
+
+    const counter = { value: 0 };
+    window.gsap.to(counter, {
+      value: targetAge,
+      duration: 1.1,
+      ease: "power2.out",
+      onUpdate: () => {
+        revealNumberEl.textContent = Math.round(counter.value);
+      },
+    });
+  }
+  revealView?.addEventListener("view:settled", animateAgeCountUp, { once: true });
 
   initConfirmStep({
     onConfirm: () => {
@@ -96,6 +137,15 @@ function init() {
   let pageFlow;
 
   const steps = [
+    // Paling awal & TANPA try/catch terpisah dari yang lain -- semua
+    // modul di bawah (flowerIntro, confetti, tiltEffect, dst) membaca
+    // isMotionReduced() dari motionPreference.js, jadi ini harus siap
+    // duluan. detectDeviceTier() juga taruh di sini supaya class
+    // `tier-*` sudah ada di <html> sebelum CSS lain dievaluasi.
+    ["preferensi motion & device tier", () => {
+      initMotionPreference();
+      detectDeviceTier();
+    }],
     ["konten", () => {
       renderMemoryPages();
       populateStaticText();
@@ -114,8 +164,12 @@ function init() {
     }],
     ["konfirmasi", () => setupConfirm(pageFlow)],
     ["efek surat", initLetterScrub],
-    ["efek tilt foto", initTiltEffect],
+    ["efek tilt foto (mouse)", initTiltEffect],
+    ["efek tilt foto (sentuh)", initTouchTilt],
     ["animasi bunga pembuka", initFlowerIntro],
+    ["atmosfer ambient", initAmbientBackground],
+    ["cursor glow & magnetic button", initCursorGlow],
+    ["toggle efek visual", initMotionToggle],
   ];
 
   steps.forEach(([label, fn]) => {

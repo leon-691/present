@@ -71,15 +71,26 @@
       <div class="music-pill__title" data-music-title>Judul lagu</div>
       <div class="music-pill__subtitle" data-music-subtitle>lagu latar</div>
     </div>
-    <div class="music-pill__bars" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="music-pill__bars motion-decorative" aria-hidden="true"><span></span><span></span><span></span></div>
   </div>
 
+  <!-- Tombol kecil override preferensi motion (lihat motionPreference.js
+       & catatan di README soal kenapa ini penting untuk Android) -->
+  <button class="motion-toggle" type="button" data-motion-toggle aria-label="Ganti mode efek visual">
+    <span aria-hidden="true">✨</span>
+  </button>
+
   <div class="page-backdrop">
+    <div class="atmosphere" data-atmosphere aria-hidden="true">
+      <div class="atmosphere__mesh"></div>
+      <div class="atmosphere__glow"></div>
+      <div class="atmosphere__noise"></div>
+    </div>
     <main class="page">
 
       <!-- 1. GERBANG KATA SANDI -->
       <section class="view is-active" id="gerbang">
-        <svg class="mascot mascot--wave pop-in" aria-hidden="true"><use href="#mascot-blob" /></svg>
+        <svg class="mascot mascot--wave motion-decorative pop-in" aria-hidden="true"><use href="#mascot-blob" /></svg>
         <h1 class="fade-up fade-up--delay-1" data-key="gateSubtitle">coba tebak kodenya</h1>
         <div class="keypad-dots fade-up fade-up--delay-2" data-gate-dots></div>
         <div class="keypad fade-up fade-up--delay-2" data-gate-keypad>
@@ -100,14 +111,14 @@
       </section>
 
       <!-- 2. SAPAAN -->
-      <section class="view" id="sapaan">
-        <svg class="mascot mascot--wave" aria-hidden="true"><use href="#mascot-blob" /></svg>
+      <section class="view view--sweep" id="sapaan">
+        <svg class="mascot mascot--wave motion-decorative" aria-hidden="true"><use href="#mascot-blob" /></svg>
         <h1 data-key="greetingText">hai!</h1>
         <button class="btn" data-next data-key="greetingButton">lanjut</button>
       </section>
 
       <!-- 3. KONFIRMASI (yes/no + reaksi lucu kalau pilih "noo") -->
-      <section class="view" id="konfirmasi">
+      <section class="view view--mask" id="konfirmasi">
         <div data-confirm-question>
           <svg class="mascot" aria-hidden="true"><use href="#mascot-blob" /></svg>
           <h2 data-key="confirmQuestion">udah siap buka kejutannya?</h2>
@@ -124,7 +135,7 @@
       </section>
 
       <!-- 4. REVEAL UMUR -->
-      <section class="view" id="reveal">
+      <section class="view view--blur" id="reveal">
         <p class="eyebrow" data-key="revealPrefix">today, you turn</p>
         <div class="reveal-number" data-reveal-number>16</div>
         <h2 data-key="revealSuffix">happy birthday!!</h2>
@@ -141,7 +152,7 @@
       </section>
 
       <!-- 6. TRANSISI -->
-      <section class="view" id="transisi">
+      <section class="view view--sweep" id="transisi">
         <p class="transition-text" data-key="transitionText">okayy last one...</p>
         <button class="btn" data-next data-key="continueLabel">klik ini &lt;3</button>
       </section>
@@ -151,7 +162,7 @@
       <div data-memory-pages></div>
 
       <!-- 8. LAGU KENANGAN -->
-      <section class="view" id="lagu">
+      <section class="view view--blur" id="lagu">
         <h2 data-key="songTitle">lagu-lagu buat kamu</h2>
         <p data-key="songSubtitle">cerita singkat di sini</p>
         <iframe
@@ -166,7 +177,7 @@
       </section>
 
       <!-- 9. SURAT PANJANG (scroll internal, tombol kembali ke awal di ujungnya) -->
-      <section class="view section--letter" id="surat">
+      <section class="view view--mask section--letter" id="surat">
         <div class="letter-scroll" data-scroll-container>
           <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
           <div class="letter-body" data-letter-body></div>
@@ -177,6 +188,7 @@
     </main>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script type="module" src="src/scripts/main.js"></script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+import { isMotionReduced } from "./motionPreference.js";
+
 /**
  * Navigasi antar-halaman (page-based, bukan scroll dokumen).
  * Urutan halaman diambil dari urutan .view di DOM secara otomatis --
@@ -5,7 +7,6 @@
  */
 export function initPageFlow() {
   const progressBar = document.querySelector("[data-page-progress]");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function getPages() {
     return [...document.querySelectorAll(".view")];
@@ -38,9 +39,13 @@ export function initPageFlow() {
       if (e.target === el) finish();
     };
     el.addEventListener("transitionend", onEnd);
-    // Fallback: transisi 0ms (reduced-motion) kadang tidak memicu
-    // transitionend sama sekali, jadi tetap dibersihkan manual.
-    setTimeout(finish, reducedMotion ? 0 : 900);
+    // Fallback kalau transitionend entah bagaimana tidak terpicu.
+    // Nilainya dibaca live (bukan disimpan sekali di awal) supaya
+    // tetap sinkron kalau pengunjung mengganti toggle "Efek Visual"
+    // di tengah sesi -- lihat motionPreference.js. --dur-page under
+    // reduced motion sekarang 260ms (dulu 0ms), jadi buffer-nya juga
+    // ikut disesuaikan, bukan langsung 0.
+    setTimeout(finish, isMotionReduced() ? 400 : 900);
   }
 
   function activate(index) {
