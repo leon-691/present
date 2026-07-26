@@ -22,14 +22,21 @@ export function initTouchTilt() {
   const MAX_TILT = 10; // derajat -- sedikit lebih halus dari versi mouse (12deg) supaya tidak liar di tangan
 
   let activeCard = null;
+  let activeTiltEl = null;
+  let activeRect = null; // di-cache sekali per sentuhan -- ukuran/posisi kartu tidak berubah selama jari digeser
+  let latestTouch = null;
+  let ticking = false;
 
-  function applyTilt(card, clientX, clientY) {
-    const tiltEl = card.querySelector(".photo-card__tilt") || card;
-    const rect = card.getBoundingClientRect();
+  function computeTransform(rect, clientX, clientY) {
     const x = (clientX - rect.left) / rect.width - 0.5;
     const y = (clientY - rect.top) / rect.height - 0.5;
-    tiltEl.style.transform =
-      `perspective(700px) rotateY(${x * MAX_TILT}deg) rotateX(${-y * MAX_TILT}deg) scale3d(1.02, 1.02, 1.02)`;
+    return `perspective(700px) rotateY(${x * MAX_TILT}deg) rotateX(${-y * MAX_TILT}deg) scale3d(1.02, 1.02, 1.02)`;
+  }
+
+  function applyPendingTilt() {
+    ticking = false;
+    if (!activeCard || !latestTouch) return;
+    activeTiltEl.style.transform = computeTransform(activeRect, latestTouch.clientX, latestTouch.clientY);
   }
 
   document.addEventListener(
@@ -38,9 +45,11 @@ export function initTouchTilt() {
       const card = e.target.closest(".photo-card");
       if (!card) return;
       activeCard = card;
+      activeTiltEl = card.querySelector(".photo-card__tilt") || card;
+      activeRect = card.getBoundingClientRect();
       card.classList.add("is-touch-active");
       const touch = e.touches[0];
-      applyTilt(card, touch.clientX, touch.clientY);
+      activeTiltEl.style.transform = computeTransform(activeRect, touch.clientX, touch.clientY);
     },
     { passive: true }
   );
@@ -49,8 +58,11 @@ export function initTouchTilt() {
     "touchmove",
     (e) => {
       if (!activeCard) return;
-      const touch = e.touches[0];
-      applyTilt(activeCard, touch.clientX, touch.clientY);
+      latestTouch = e.touches[0];
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(applyPendingTilt);
+      }
     },
     { passive: true }
   );
@@ -58,9 +70,11 @@ export function initTouchTilt() {
   function release() {
     if (!activeCard) return;
     activeCard.classList.remove("is-touch-active");
-    const tiltEl = activeCard.querySelector(".photo-card__tilt") || activeCard;
-    tiltEl.style.transform = "";
+    activeTiltEl.style.transform = "";
     activeCard = null;
+    activeTiltEl = null;
+    activeRect = null;
+    latestTouch = null;
   }
 
   document.addEventListener("touchend", release, { passive: true });

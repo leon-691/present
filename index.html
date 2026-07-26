@@ -6,6 +6,24 @@
   <title>Untuk Adik</title>
   <meta name="description" content="Sebuah kejutan kecil, dibuat khusus untukmu." />
 
+  <!-- Ini kado pribadi, bukan halaman publik -- jangan sampai terindeks
+       mesin pencari atau muncul di hasil pencarian orang lain. -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Supaya saat link ini dibagikan lewat WhatsApp/Instagram, preview-nya
+       rapi -- tanpa membocorkan isi kejutannya. -->
+  <meta property="og:title" content="Untuk Adik" />
+  <meta property="og:description" content="Sebuah kejutan kecil, dibuat khusus untukmu." />
+  <meta property="og:type" content="website" />
+
+  <meta name="theme-color" content="#3E63DD" />
+  <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <!-- Favicon dari bentuk maskot yang sudah ada -- inline SVG, tanpa perlu file gambar tambahan -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='54' r='40' fill='%236C8EF0'/%3E%3Ccircle cx='38' cy='50' r='6' fill='%234A362B'/%3E%3Ccircle cx='62' cy='50' r='6' fill='%234A362B'/%3E%3Cellipse cx='50' cy='66' rx='8' ry='6' fill='%23FF8577'/%3E%3Ccircle cx='28' cy='60' r='6' fill='%23FFB4A8' opacity='0.8'/%3E%3Ccircle cx='72' cy='60' r='6' fill='%23FFB4A8' opacity='0.8'/%3E%3C/svg%3E" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -107,7 +125,7 @@
           <button class="keypad__key" data-key="0">0</button>
           <button class="keypad__key keypad__key--action" data-key="back" aria-label="Hapus">⌫</button>
         </div>
-        <p class="hint-text fade-up fade-up--delay-3" data-gate-message data-key="passwordClue">petunjuk</p>
+        <p class="hint-text fade-up fade-up--delay-3" data-gate-message data-key="passwordClue" aria-live="polite" aria-atomic="true">petunjuk</p>
       </section>
 
       <!-- 2. SAPAAN -->
@@ -165,13 +183,15 @@
       <section class="view view--blur" id="lagu">
         <h2 data-key="songTitle">lagu-lagu buat kamu</h2>
         <p data-key="songSubtitle">cerita singkat di sini</p>
-        <iframe
-          data-key-src="spotifyEmbedSrc"
-          title="Playlist Spotify"
-          style="height: 300px;"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-        ></iframe>
+        <div class="song-frame">
+          <iframe
+            data-key-src="spotifyEmbedSrc"
+            title="Playlist Spotify"
+            style="height: 300px;"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          ></iframe>
+        </div>
         <p class="section--song__note">Kalau player di atas kosong, ganti dulu link playlist-nya di <code>content.js</code>.</p>
         <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>

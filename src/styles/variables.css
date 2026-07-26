@@ -4,8 +4,11 @@
    ========================================================================== */
 
 :root {
+  color-scheme: light; /* situs ini terang secara sengaja -- cegah browser otomatis menggelapkan scrollbar/kontrol native yang bentrok dgn palet krem hangat */
+
   /* --- Warna dasar (warm-cute palette) --- */
   --color-bg: #FFF8EC;
+  --color-bg-rgb: 255, 248, 236; /* triplet dari --color-bg, dipakai rgba() di .page (lihat base.css) */
   --color-bg-soft: #FFF1DC;
   --color-surface: #FFFFFF;
   --color-text: #4A362B;

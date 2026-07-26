@@ -17,6 +17,27 @@ export function initPageFlow() {
     0
   );
 
+  // Halaman yang BUKAN halaman aktif saat ini disembunyikan total dari
+  // assistive technology (bukan cuma disembunyikan secara visual lewat
+  // opacity) -- tanpa ini, screen reader/keyboard user bisa "menemukan"
+  // tombol & teks dari halaman kenangan/surat yang belum saatnya
+  // dibuka, karena secara DOM elemen itu tetap ada & tetap fokusable.
+  // `inert` (didukung luas sejak Chrome 102 & Safari 15.5) mematikan
+  // fokus+interaksi+exposure aksesibilitas sekaligus dalam satu atribut;
+  // `aria-hidden` ditambahkan juga sebagai jaring pengaman untuk
+  // pembaca layar lama.
+  function setInert(el, isInert) {
+    if (isInert) {
+      el.setAttribute("inert", "");
+      el.setAttribute("aria-hidden", "true");
+    } else {
+      el.removeAttribute("inert");
+      el.removeAttribute("aria-hidden");
+    }
+  }
+
+  getPages().forEach((el, i) => setInert(el, i !== currentIndex));
+
   function updateProgress(total) {
     if (!progressBar) return;
     const pct = total > 1 ? (currentIndex / (total - 1)) * 100 : 0;
@@ -59,15 +80,35 @@ export function initPageFlow() {
     if (outgoing && outgoing !== incoming) {
       outgoing.classList.remove("is-active");
       outgoing.classList.add("is-leaving");
+      // `inert` dipasang SEKARANG (bukan menunggu transisi keluar
+      // selesai) -- browser otomatis memindahkan fokus keyboard
+      // keluar dari subtree ini kalau ada elemen di dalamnya yang
+      // sedang fokus (mis. tombol yang barusan diklik), jadi tidak
+      // perlu diurus manual di sini.
+      setInert(outgoing, true);
       afterTransition(outgoing, () => outgoing.classList.remove("is-leaving"));
     }
 
+    setInert(incoming, false);
     incoming.classList.add("is-active");
     currentIndex = index;
 
     // Reset scroll internal (dipakai halaman surat) tiap kali halaman
     // itu ditampilkan lagi, supaya selalu mulai dari atas.
     incoming.querySelector("[data-scroll-container]")?.scrollTo(0, 0);
+
+    // Pindahkan fokus keyboard/pembaca-layar ke halaman baru -- tanpa
+    // ini, fokus cuma "hilang" kembali ke <body> (efek samping inert
+    // di atas) dan pengguna keyboard/NVDA/TalkBack harus meraba dari
+    // awal dokumen lagi tiap kali pindah halaman. tabindex="-1" dicabut
+    // segera setelah blur supaya tidak ikut masuk urutan Tab biasa.
+    incoming.setAttribute("tabindex", "-1");
+    incoming.focus({ preventScroll: true });
+    incoming.addEventListener(
+      "blur",
+      () => incoming.removeAttribute("tabindex"),
+      { once: true }
+    );
 
     // Beri tahu modul lain (mis. efek sorotan-baca di surat) bahwa
     // halaman ini sudah benar-benar tampil penuh -- transisi masuk

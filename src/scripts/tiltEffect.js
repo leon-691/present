@@ -13,6 +13,22 @@ export function initTiltEffect() {
 
   const MAX_TILT = 12; // derajat
 
+  let hoveredCard = null;
+  let hoveredTiltEl = null;
+  let hoveredRect = null; // di-cache sekali per kartu -- dihitung ulang HANYA saat kartu yang di-hover berganti
+  let latestEvent = null;
+  let ticking = false;
+
+  function applyPendingTilt() {
+    ticking = false;
+    if (!hoveredCard || !latestEvent) return;
+    const rect = hoveredRect;
+    const x = (latestEvent.clientX - rect.left) / rect.width - 0.5;
+    const y = (latestEvent.clientY - rect.top) / rect.height - 0.5;
+    hoveredTiltEl.style.transform =
+      `perspective(700px) rotateY(${x * MAX_TILT}deg) rotateX(${-y * MAX_TILT}deg) scale3d(1.03, 1.03, 1.03)`;
+  }
+
   // Delegasi lewat document supaya kartu yang dibuat belakangan
   // (mis. halaman kenangan yang dirender JS) tetap kebagian efeknya,
   // tanpa perlu daftar ulang listener tiap kali render.
@@ -23,15 +39,22 @@ export function initTiltEffect() {
   // strukturnya tidak ada elemen ini, supaya tetap tidak pernah error.
   document.addEventListener("mousemove", (e) => {
     const card = e.target.closest(".photo-card");
-    if (!card) return;
-    const tiltEl = card.querySelector(".photo-card__tilt") || card;
+    if (!card) {
+      hoveredCard = null;
+      return;
+    }
 
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    if (card !== hoveredCard) {
+      hoveredCard = card;
+      hoveredTiltEl = card.querySelector(".photo-card__tilt") || card;
+      hoveredRect = card.getBoundingClientRect();
+    }
 
-    tiltEl.style.transform =
-      `perspective(700px) rotateY(${x * MAX_TILT}deg) rotateX(${-y * MAX_TILT}deg) scale3d(1.03, 1.03, 1.03)`;
+    latestEvent = e;
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(applyPendingTilt);
+    }
   });
 
   document.addEventListener(
@@ -42,6 +65,10 @@ export function initTiltEffect() {
       if (card.contains(e.relatedTarget)) return;
       const tiltEl = card.querySelector(".photo-card__tilt") || card;
       tiltEl.style.transform = "";
+      if (card === hoveredCard) {
+        hoveredCard = null;
+        latestEvent = null;
+      }
     },
     true
   );

@@ -29,6 +29,8 @@ export function initCursorGlow() {
   let currentX = targetX;
   let currentY = targetY;
   let activeMagnet = null;
+  let activeMagnetRect = null; // cache -- dihitung ulang HANYA saat tombol yang di-hover berganti, bukan tiap mousemove
+  let rafId = null;
 
   function loop() {
     // Lerp lembut supaya glow terasa "mengikuti dengan jeda halus",
@@ -36,9 +38,29 @@ export function initCursorGlow() {
     currentX += (targetX - currentX) * 0.18;
     currentY += (targetY - currentY) * 0.18;
     glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   }
-  requestAnimationFrame(loop);
+
+  function startLoop() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function stopLoop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  startLoop();
+
+  // Jangan biarkan loop rAF jalan terus tanpa henti saat tab tidak
+  // terlihat (mis. pengunjung pindah tab) -- sia-sia menghabiskan
+  // baterai/CPU untuk animasi yang toh tidak terlihat. Pola sama
+  // seperti ambientBackground.js.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") startLoop();
+    else stopLoop();
+  });
 
   function resetMagnet(el) {
     el.classList.remove("is-magnet-active");
@@ -56,11 +78,20 @@ export function initCursorGlow() {
     if (activeMagnet && activeMagnet !== magnetTarget) {
       resetMagnet(activeMagnet);
       activeMagnet = null;
+      activeMagnetRect = null;
     }
 
     if (!magnetTarget) return;
 
-    const rect = magnetTarget.getBoundingClientRect();
+    // Rect cuma dihitung ulang saat tombolnya baru saja jadi target
+    // (ukuran/posisi tombol tidak berubah selama pointer masih di
+    // atasnya) -- sebelumnya dihitung ulang di SETIAP event
+    // mousemove, padahal nilainya nyaris selalu sama.
+    if (magnetTarget !== activeMagnet) {
+      activeMagnetRect = magnetTarget.getBoundingClientRect();
+    }
+    const rect = activeMagnetRect;
+
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const dx = e.clientX - cx;
@@ -80,6 +111,7 @@ export function initCursorGlow() {
     if (activeMagnet) {
       resetMagnet(activeMagnet);
       activeMagnet = null;
+      activeMagnetRect = null;
     }
   });
 
@@ -91,6 +123,7 @@ export function initCursorGlow() {
       if (btn.contains(e.relatedTarget)) return;
       resetMagnet(btn);
       activeMagnet = null;
+      activeMagnetRect = null;
     },
     true
   );

@@ -8,6 +8,29 @@
 
 html {
   scroll-behavior: smooth;
+  /* Cegah "pull-to-refresh"/bounce browser mobile ikut ketarik saat
+     pengguna scroll di dalam surat -- situs ini dirancang terasa
+     seperti aplikasi satu halaman, bukan halaman web biasa yang bisa
+     di-refresh dengan gestur tarik ke bawah. */
+  overscroll-behavior-y: contain;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  /* Highlight abu-abu/biru bawaan Chrome & Safari saat elemen
+     disentuh -- dimatikan karena sudah ada feedback sentuh sendiri
+     yang lebih halus (ripple, lihat rippleEffect.js, + transform
+     press bawaan tiap tombol). Tanpa ini, dua feedback visual
+     bertumpuk dan terlihat kurang rapi. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Jaring pengaman kalau motionPreference.js belum sempat jalan (mis.
@@ -43,17 +66,6 @@ html.motion-reduced .letter-body {
   scroll-behavior: auto;
 }
 
-body {
-  margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: var(--fs-base);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
 h1, h2, h3 {
   font-family: var(--font-display);
   font-weight: 600;
@@ -74,6 +86,8 @@ img {
 button {
   font-family: inherit;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 a {
@@ -105,6 +119,7 @@ a {
    position:relative supaya .atmosphere (lapisan aurora + noise) bisa
    mengisi ruang kosong di sekitar kartu tanpa memengaruhi layout. */
 .page-backdrop {
+  height: 100vh; /* fallback utk browser/WebView lama yang belum kenal 100svh -- dioverride baris di bawah kalau didukung */
   height: 100svh;
   display: flex;
   align-items: center;
@@ -143,6 +158,7 @@ a {
     radial-gradient(50% 40% at 80% 90%, rgba(var(--aurora-1), 0.5), transparent 70%);
   filter: blur(60px) saturate(1.1);
   animation: mesh-drift var(--dur-atmosphere) ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .atmosphere__glow {
@@ -211,8 +227,19 @@ html.tier-low .atmosphere__glow::after {
 .page {
   width: 100%;
   max-width: var(--content-width);
+  height: 100vh; /* fallback, lihat catatan di .page-backdrop */
   height: 100svh;
-  background: var(--color-bg);
+  /* Translucent, BUKAN solid seperti sebelumnya -- supaya lapisan
+     atmosfer (aurora/glow/noise) tetap terlihat menembus kanvas
+     halaman, bahkan di HP di mana .page memenuhi hampir seluruh
+     lebar layar (jadi ruang kosong di sekeliling .page nyaris tidak
+     ada). SENGAJA tanpa backdrop-filter -- elemen ini nyaris
+     sepenuh-layar dan selalu tampil (bukan cuma dekorasi
+     sesekali), jadi blur kontinu di area seluas itu cukup berat di
+     GPU Android kelas menengah. Lapisan atmosfer sendiri sudah
+     diberi filter:blur() di sumbernya (base.css), jadi tanpa
+     backdrop-filter pun hasilnya tetap terlihat lembut/tidak tajam. */
+  background: rgba(var(--color-bg-rgb), 0.93);
   position: relative;
   z-index: 1;
   box-shadow: var(--shadow-card);
@@ -224,6 +251,7 @@ html.tier-low .atmosphere__glow::after {
     padding: var(--space-lg) 0;
   }
   .page {
+    height: min(100vh, 840px); /* fallback, lihat catatan di .page-backdrop */
     height: min(100svh, 840px);
     border-radius: var(--radius-lg);
   }

@@ -13,6 +13,7 @@ import { detectDeviceTier } from "./deviceTier.js";
 import { seededRange } from "./seededRandom.js";
 import { initAmbientBackground } from "./ambientBackground.js";
 import { initCursorGlow } from "./cursorGlow.js";
+import { initRippleEffect } from "./rippleEffect.js";
 
 /** Isi semua elemen [data-key] dengan teks dari content.js */
 function populateStaticText() {
@@ -137,11 +138,14 @@ function init() {
   let pageFlow;
 
   const steps = [
-    // Paling awal & TANPA try/catch terpisah dari yang lain -- semua
-    // modul di bawah (flowerIntro, confetti, tiltEffect, dst) membaca
-    // isMotionReduced() dari motionPreference.js, jadi ini harus siap
-    // duluan. detectDeviceTier() juga taruh di sini supaya class
-    // `tier-*` sudah ada di <html> sebelum CSS lain dievaluasi.
+    // Harus jadi step PERTAMA: semua modul di bawah (flowerIntro,
+    // confetti, tiltEffect, dst) membaca isMotionReduced() dari
+    // motionPreference.js, jadi nilainya harus sudah siap sebelum
+    // step-step lain jalan. detectDeviceTier() juga ditaruh di sini
+    // supaya class `tier-*` sudah ada di <html> sebelum CSS lain
+    // dievaluasi. (Tiap step di array ini otomatis dibungkus
+    // try/catch yang sama lewat forEach di bawah -- lihat komentar
+    // di awal fungsi init().)
     ["preferensi motion & device tier", () => {
       initMotionPreference();
       detectDeviceTier();
@@ -169,6 +173,7 @@ function init() {
     ["animasi bunga pembuka", initFlowerIntro],
     ["atmosfer ambient", initAmbientBackground],
     ["cursor glow & magnetic button", initCursorGlow],
+    ["ripple feedback tombol/tuts", initRippleEffect],
     ["toggle efek visual", initMotionToggle],
   ];
 

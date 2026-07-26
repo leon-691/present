@@ -103,6 +103,13 @@
   transition: opacity var(--dur-page) var(--ease-page),
               transform var(--dur-page) var(--ease-page);
   backface-visibility: hidden;
+  /* Container ini jadi target fokus terprogram tiap kali halaman
+     berpindah (lihat pageFlow.js -- supaya screen reader/keyboard
+     user "masuk" ke halaman baru, bukan sekadar disembunyikan). Bukan
+     dimaksudkan untuk ditandai visual sebagai satu kotak besar, jadi
+     outline-nya dimatikan di sini -- tombol/tautan di dalamnya tetap
+     dapat outline fokus normal dari :focus-visible seperti biasa. */
+  outline: none;
 }
 
 .view.is-active {
@@ -197,6 +204,9 @@
   font-weight: 600;
   box-shadow: 0 4px 0 var(--color-border), var(--shadow-pop);
   transition: transform 150ms var(--ease-press), box-shadow 150ms var(--ease-press);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .keypad__key:hover {
@@ -230,6 +240,16 @@
   animation: shake 420ms var(--ease-out-soft);
 }
 
+/* Shake ini murni penguat visual -- info "kode salah" sudah
+   tersampaikan lewat warna (.is-error) & teks pesan (sudah
+   aria-live, lihat index.html), jadi aman dimatikan saat
+   reduced-motion. Gerakan bolak-balik cepat seperti ini justru
+   termasuk jenis animasi yang paling berpotensi mengganggu secara
+   vestibular, jadi sengaja TIDAK dianggap "esensial". */
+html.motion-reduced .is-shaking {
+  animation: none;
+}
+
 /* --- Floating music pill (persistent across the whole page) --- */
 .music-pill {
   position: fixed;
@@ -240,7 +260,10 @@
   display: flex;
   align-items: center;
   gap: 0.6em;
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
   border-radius: 999px;
   padding: 0.5em 0.9em 0.5em 0.5em;
   box-shadow: var(--shadow-card);
@@ -335,6 +358,8 @@
   box-shadow: var(--shadow-card);
   transition: transform 150ms var(--ease-press), opacity 200ms var(--ease-out-soft);
   opacity: 0.75;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .motion-toggle:hover,
@@ -394,11 +419,26 @@
     0 2px 3px var(--color-shadow),
     0 16px 30px -16px var(--color-shadow),
     0 30px 46px -28px rgba(74, 54, 43, 0.28);
+  /* Gestur sentuh di atas kartu ini SEPENUHNYA dipakai untuk tilt
+     (lihat touchTilt.js), bukan scroll/pan bawaan browser -- tanpa
+     ini, jari yang menggeser foto bisa memicu scroll halaman
+     berbarengan dengan tilt, terasa "berebut" satu sama lain. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .photo-card__tilt {
   transform-style: preserve-3d;
   transition: transform 200ms var(--ease-out-soft);
+}
+
+/* will-change hanya diberikan ke kartu di halaman yang SEDANG aktif --
+   sebelumnya semua kartu foto (termasuk yang ada di halaman kenangan
+   lain yang belum dibuka/tersembunyi) sama-sama dipromosikan jadi
+   compositor layer sendiri terus-menerus, padahal cuma satu yang
+   pernah terlihat & berinteraksi dalam satu waktu. */
+.view.is-active .photo-card__tilt {
   will-change: transform;
 }
 

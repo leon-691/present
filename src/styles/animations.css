@@ -165,6 +165,26 @@ html.tier-low .view--blur.is-leaving {
   transform: scale(1.05) rotate(1.5deg);
 }
 
+/* --- Ripple feedback (lihat rippleEffect.js) ---
+   currentColor supaya otomatis pas di tombol terang maupun gelap
+   tanpa perlu override warna per komponen. */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ripple-expand 550ms ease-out forwards;
+}
+
+@keyframes ripple-expand {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
 /* --- Animasi bunga pembuka --- */
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }

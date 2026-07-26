@@ -102,3 +102,25 @@ karena penggunanya minta itu, tapi karena mode hemat baterai OS.
 Kalau animasi terasa mati di suatu HP, coba ketuk tombol ini sampai
 ke mode "Penuh". Detail teknisnya ada di komentar
 `src/scripts/motionPreference.js`.
+
+## 8. Aksesibilitas: halaman yang belum dibuka disembunyikan total
+
+Situs ini page-based -- semua halaman (`.view`) ada di DOM sekaligus,
+cuma satu yang terlihat lewat CSS. Supaya pengguna keyboard/pembaca
+layar tidak "menemukan" tombol atau teks dari halaman yang belum
+saatnya dibuka (misalnya surat, sebelum kode dimasukkan),
+`pageFlow.js` memasang atribut `inert` + `aria-hidden` ke semua
+halaman yang sedang tidak aktif. Kalau menambah halaman baru secara
+manual di HTML (bukan lewat `content.js`), pastikan classnya tetap
+`view` supaya ikut kena governance ini secara otomatis.
+
+## 9. Meta tag & SEO
+
+`index.html` sudah diberi `robots: noindex` (situs ini kado pribadi,
+sengaja tidak boleh terindeks mesin pencari), Open Graph tags (biar
+preview link rapi saat dibagikan lewat chat, tanpa membocorkan isi),
+`theme-color`, `color-scheme: light`, dan favicon SVG inline dari
+bentuk maskot. Kalau mau ganti judul/deskripsi yang dipakai utk
+preview link, edit langsung di `<head>` -- ini SATU-SATUNYA teks yang
+sengaja tidak diambil dari `content.js`, karena harus tetap netral
+(tidak boleh membocorkan isi kejutan) walau isi surat/pesan diubah.

@@ -39,18 +39,46 @@
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
   font-weight: 700;
+  font-variant-numeric: tabular-nums; /* tiap digit lebar sama -- jadi tidak "goyang" pas dihitung naik (lihat animateAgeCountUp di main.js) */
   color: var(--color-primary);
   line-height: 1;
   position: relative;
+  min-width: 2ch; /* cadangkan lebar utk 2 digit dari awal, supaya elemen di bawahnya tidak ikut bergeser saat angka masih 1 digit di awal hitungan */
 }
 
 #reveal h2 {
   font-size: var(--fs-xl);
 }
 
-/* --- 5. Pesan utama --- */
+/* --- 5. Pesan utama ---
+   Ini "puncak" alur cerita -- pesan inti yang semua halaman
+   sebelumnya bangun menujunya. Dibuat sedikit lebih menonjol
+   daripada .card biasa: cincin gradasi lembut di sekelilingnya
+   (bukan cuma shadow polos) supaya terasa seperti dijaga cahaya,
+   dan kartu tetap solid/opaque (kontras dgn kanvas kaca di
+   belakangnya) supaya terasa jadi pijakan yang kokoh. */
 #pesan-utama .card {
   max-width: 380px;
+  position: relative;
+  background: var(--color-surface);
+  box-shadow:
+    0 1px 2px var(--color-shadow),
+    0 20px 40px -20px var(--color-shadow),
+    0 0 0 1px rgba(var(--aurora-3), 0.25);
+}
+
+#pesan-utama .card::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(var(--aurora-2), 0.7), rgba(var(--aurora-3), 0.7), rgba(var(--aurora-4), 0.7));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /* --- 6. Transisi --- */
@@ -61,12 +89,25 @@
   max-width: 18ch;
 }
 
-/* --- 8. Lagu --- */
-#lagu iframe {
+/* --- 8. Lagu ---
+   iframe dibungkus .song-frame (kartu kaca) supaya terasa jadi bagian
+   dari bahasa visual situs yang sama, bukan kotak mengambang sendiri. */
+.song-frame {
   width: 100%;
   max-width: 340px;
+  padding: var(--space-xs);
   border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
   box-shadow: var(--shadow-card);
+}
+
+#lagu iframe {
+  display: block;
+  width: 100%;
+  border-radius: calc(var(--radius-md) - 4px);
   border: none;
 }
 
