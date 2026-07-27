@@ -1,29 +1,44 @@
-/**
- * Konfirmasi "udah siap buka kejutannya?" dengan reaksi lucu kalau
- * pilih "belum siap" -- lalu balik lagi ke pertanyaan yang sama,
- * meniru pola di video referensi.
- */
-export function initConfirmStep({ onConfirm }) {
-  const section = document.querySelector("#konfirmasi");
-  if (!section) return;
+import { content } from "../data/content.js";
 
-  const questionEl = section.querySelector("[data-confirm-question]");
-  const reactionEl = section.querySelector("[data-confirm-reaction]");
-  const yesBtn = section.querySelector("[data-confirm-yes]");
-  const noBtn = section.querySelector("[data-confirm-no]");
-  const backBtn = section.querySelector("[data-confirm-back]");
+let questionEl, reactionEl, yesBtn;
 
-  noBtn?.addEventListener("click", () => {
-    questionEl.hidden = true;
-    reactionEl.hidden = false;
-  });
+function showReaction() {
+  questionEl.hidden = true;
+  reactionEl.hidden = false;
+  const heading = reactionEl.querySelector("h2");
+  heading.classList.remove("is-glitching");
+  void heading.offsetWidth;
+  heading.classList.add("is-glitching");
+}
 
-  backBtn?.addEventListener("click", () => {
-    reactionEl.hidden = true;
-    questionEl.hidden = false;
-  });
+function showQuestion() {
+  reactionEl.hidden = true;
+  questionEl.hidden = false;
+}
 
-  yesBtn?.addEventListener("click", () => {
-    onConfirm();
-  });
+function handleYes() {
+  document.dispatchEvent(new CustomEvent("confirm:yes"));
+}
+
+export function initConfirmStep() {
+  const root = document.querySelector('[data-act="konfirmasi"]');
+  if (!root) return;
+
+  questionEl = root.querySelector("[data-confirm-question]");
+  reactionEl = root.querySelector("[data-confirm-reaction]");
+  yesBtn = root.querySelector("[data-confirm-yes]");
+  const noBtn = root.querySelector("[data-confirm-no]");
+  const backBtn = root.querySelector("[data-confirm-back]");
+
+  root.querySelector("[data-confirm-question-text]").textContent = content.confirmQuestion;
+  yesBtn.textContent = content.confirmYes;
+  noBtn.textContent = content.confirmNo;
+  root.querySelector("[data-confirm-reaction-text]").textContent = content.confirmReactionText;
+  backBtn.textContent = content.confirmReactionButton;
+
+  yesBtn.addEventListener("click", handleYes);
+  noBtn.addEventListener("click", showReaction);
+  backBtn.addEventListener("click", showQuestion);
+
+  document.addEventListener("experience:restart", showQuestion);
 }

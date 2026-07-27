@@ -1,79 +1,135 @@
-import { burstConfetti } from "./confetti.js";
+import { content } from "../data/content.js";
+import { goNext } from "./pageFlow.js";
+import { burstEmbers } from "./confettiEmber.js";
 
-/**
- * Menyalakan gerbang kata sandi berbasis PIN numerik.
- * onSuccess() dipanggil sekali saat kode benar.
- */
-export function initPasswordGate({ password, wrongMessage, onSuccess, onFirstInput }) {
-  const dotsEl = document.querySelector("[data-gate-dots]");
-  const keypadEl = document.querySelector("[data-gate-keypad]");
-  const messageEl = document.querySelector("[data-gate-message]");
+// Persis tata letak referensi: 1-9, spasi kosong (bukan tombol "hapus
+// semua" yang tidak pernah ada), 0, lalu hapus-satu-digit.
+const KEY_LAYOUT = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "spacer", "0", "back"];
 
-  if (!dotsEl || !keypadEl) return;
+let buffer = [];
+let locked = false;
+let hasStarted = false;
+let root, dotsEl, keypadEl, hintEl, originalClue;
 
-  let input = "";
-  let hasStarted = false;
-  const length = password.length;
-  const originalClue = messageEl?.textContent ?? "";
+function isGateActive() {
+  return root?.classList.contains("is-active");
+}
 
-  // Bangun titik indikator sebanyak panjang password
-  dotsEl.innerHTML = Array.from({ length }, () =>
-    `<span class="keypad-dots__dot"></span>`
-  ).join("");
-  const dots = [...dotsEl.querySelectorAll(".keypad-dots__dot")];
+function renderDots() {
+  dotsEl.innerHTML = "";
+  const length = String(content.password).length;
+  for (let i = 0; i < length; i++) {
+    const tick = document.createElement("span");
+    tick.className = "frame-dots__tick";
+    if (i < buffer.length) tick.classList.add("is-filled");
+    dotsEl.appendChild(tick);
+  }
+}
 
-  function renderDots() {
-    dots.forEach((dot, i) => dot.classList.toggle("is-filled", i < input.length));
+// Baris hint yang sama menampilkan clue secara default, lalu untuk
+// sesaat menampilkan pesan salah sebelum kembali ke clue -- persis satu
+// baris yang sama seperti referensi, bukan dua baris terpisah.
+function shakeAndReset() {
+  dotsEl.classList.add("is-error", "is-shaking");
+  hintEl.textContent = content.gateWrongMessage;
+  setTimeout(() => {
+    dotsEl.classList.remove("is-shaking", "is-error");
+    hintEl.textContent = originalClue;
+    buffer = [];
+    renderDots();
+  }, 450);
+}
+
+function handleSuccess() {
+  locked = true;
+  burstEmbers(dotsEl);
+  setTimeout(() => goNext(), 500);
+}
+
+function handleKey(key) {
+  if (locked || !isGateActive()) return;
+
+  if (!hasStarted) {
+    hasStarted = true;
+    document.dispatchEvent(new CustomEvent("gate:first-interaction"));
   }
 
-  function shakeAndReset() {
-    dotsEl.classList.add("is-error");
-    dotsEl.classList.add("is-shaking");
-    if (messageEl) messageEl.textContent = wrongMessage;
-    setTimeout(() => {
-      dotsEl.classList.remove("is-shaking");
-      dotsEl.classList.remove("is-error");
-      if (messageEl) messageEl.textContent = originalClue;
-      input = "";
-      renderDots();
-    }, 450);
+  if (key === "back") {
+    buffer.pop();
+    renderDots();
+    return;
   }
 
-  function handleKey(key) {
-    if (!hasStarted) {
-      hasStarted = true;
-      onFirstInput?.();
-    }
+  const target = String(content.password);
+  if (buffer.length >= target.length) return;
 
-    if (key === "back") {
-      input = input.slice(0, -1);
-      renderDots();
+  buffer.push(key);
+  renderDots();
+
+  if (buffer.length === target.length) {
+    if (buffer.join("") === target) handleSuccess();
+    else shakeAndReset();
+  }
+}
+
+function buildKeypad() {
+  keypadEl.innerHTML = "";
+  KEY_LAYOUT.forEach((key) => {
+    if (key === "spacer") {
+      const spacer = document.createElement("span");
+      spacer.className = "keypad__spacer";
+      spacer.setAttribute("aria-hidden", "true");
+      keypadEl.appendChild(spacer);
       return;
     }
-    if (input.length >= length) return;
 
-    input += key;
-    renderDots();
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "keypad__key";
 
-    if (input.length === length) {
-      if (input === password) {
-        burstConfetti(dotsEl);
-        setTimeout(onSuccess, 500);
-      } else {
-        shakeAndReset();
-      }
+    if (key === "back") {
+      btn.classList.add("keypad__key--action");
+      btn.textContent = "⌫";
+      btn.setAttribute("aria-label", "Hapus satu digit");
+    } else {
+      btn.textContent = key;
+      btn.setAttribute("aria-label", `Digit ${key}`);
     }
-  }
 
-  keypadEl.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-key]");
-    if (!btn) return;
-    handleKey(btn.dataset.key);
+    btn.addEventListener("click", () => handleKey(key));
+    keypadEl.appendChild(btn);
   });
+}
 
-  // Dukungan keyboard fisik untuk aksesibilitas
-  window.addEventListener("keydown", (e) => {
-    if (/^[0-9]$/.test(e.key)) handleKey(e.key);
-    if (e.key === "Backspace") handleKey("back");
-  });
+function handlePhysicalKeyboard(e) {
+  if (/^[0-9]$/.test(e.key)) handleKey(e.key);
+  else if (e.key === "Backspace") handleKey("back");
+}
+
+function reset() {
+  buffer = [];
+  locked = false;
+  hasStarted = false;
+  dotsEl.classList.remove("is-error", "is-shaking");
+  hintEl.textContent = originalClue;
+  renderDots();
+}
+
+export function initPasswordGate() {
+  root = document.querySelector('[data-act="gerbang"]');
+  if (!root) return;
+
+  dotsEl = root.querySelector("[data-gate-dots]");
+  keypadEl = root.querySelector("[data-gate-keypad]");
+  hintEl = root.querySelector("[data-gate-hint]");
+
+  root.querySelector("[data-gate-subtitle]").textContent = content.gateSubtitle;
+  originalClue = content.passwordClue;
+  hintEl.textContent = originalClue;
+
+  buildKeypad();
+  renderDots();
+
+  window.addEventListener("keydown", handlePhysicalKeyboard);
+  document.addEventListener("experience:restart", reset);
 }
