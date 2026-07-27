@@ -1,14 +1,16 @@
 import { isMotionReduced } from "./motionPreference.js";
 
 /**
- * Cursor glow amber + magnetic pull pada tombol -- hanya untuk device
- * dengan mouse/trackpad asli (hover:hover & pointer:fine). Di layar
- * sentuh efek ini otomatis dilewati karena tidak ada posisi kursor
- * presisi (bukan dimatikan karena "ini mobile").
+ * Cursor glow + magnetic pull pada tombol -- HANYA untuk device dengan
+ * mouse/trackpad asli (hover:hover & pointer:fine), pola gate yang
+ * sama seperti tiltEffect.js. Di layar sentuh efek ini otomatis
+ * dilewati karena memang tidak ada posisi kursor presisi (bukan
+ * dimatikan karena "ini mobile").
  *
- * Offset magnetic diterapkan lewat custom property --magnet-x/-y (dibaca
- * .btn di components.css), bukan langsung menimpa transform, supaya tetap
- * menyatu dengan transform hover/active bawaan tombol.
+ * Offset magnetic diterapkan lewat custom property --magnet-x/-y,
+ * BUKAN langsung menimpa `transform` -- supaya tetap menyatu dengan
+ * transform hover/active bawaan tombol di components.css, bukan
+ * menimpanya.
  */
 export function initCursorGlow() {
   if (isMotionReduced()) return;
@@ -27,10 +29,12 @@ export function initCursorGlow() {
   let currentX = targetX;
   let currentY = targetY;
   let activeMagnet = null;
-  let activeMagnetRect = null;
+  let activeMagnetRect = null; // cache -- dihitung ulang HANYA saat tombol yang di-hover berganti, bukan tiap mousemove
   let rafId = null;
 
   function loop() {
+    // Lerp lembut supaya glow terasa "mengikuti dengan jeda halus",
+    // bukan menempel kaku 1:1 ke posisi kursor.
     currentX += (targetX - currentX) * 0.18;
     currentY += (targetY - currentY) * 0.18;
     glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
@@ -38,7 +42,8 @@ export function initCursorGlow() {
   }
 
   function startLoop() {
-    if (!rafId) rafId = requestAnimationFrame(loop);
+    if (rafId) return;
+    rafId = requestAnimationFrame(loop);
   }
 
   function stopLoop() {
@@ -48,6 +53,10 @@ export function initCursorGlow() {
 
   startLoop();
 
+  // Jangan biarkan loop rAF jalan terus tanpa henti saat tab tidak
+  // terlihat (mis. pengunjung pindah tab) -- sia-sia menghabiskan
+  // baterai/CPU untuk animasi yang toh tidak terlihat. Pola sama
+  // seperti ambientBackground.js.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") startLoop();
     else stopLoop();
@@ -74,10 +83,15 @@ export function initCursorGlow() {
 
     if (!magnetTarget) return;
 
+    // Rect cuma dihitung ulang saat tombolnya baru saja jadi target
+    // (ukuran/posisi tombol tidak berubah selama pointer masih di
+    // atasnya) -- sebelumnya dihitung ulang di SETIAP event
+    // mousemove, padahal nilainya nyaris selalu sama.
     if (magnetTarget !== activeMagnet) {
       activeMagnetRect = magnetTarget.getBoundingClientRect();
     }
     const rect = activeMagnetRect;
+
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const dx = e.clientX - cx;

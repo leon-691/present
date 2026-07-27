@@ -11,143 +11,178 @@
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- Supaya saat link ini dibagikan lewat WhatsApp/Instagram, preview-nya
-       rapi -- tanpa membocorkan isi kejutannya. Judul tab asli (personal)
-       baru diset lewat JS di main.js, khusus untuk yang benar-benar buka. -->
+       rapi -- tanpa membocorkan isi kejutannya. -->
   <meta property="og:title" content="Untuk Adik" />
   <meta property="og:description" content="Sebuah kejutan kecil, dibuat khusus untukmu." />
   <meta property="og:type" content="website" />
 
-  <meta name="theme-color" content="#14100b" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#3E63DD" />
+  <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-  <!-- Favicon -- lensa/aperture kecil, identitas baru, inline SVG tanpa file tambahan -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314100b'/%3E%3Ccircle cx='50' cy='50' r='34' fill='none' stroke='%23e2963f' stroke-width='4' opacity='0.55'/%3E%3Ccircle cx='50' cy='50' r='19' fill='%23e2963f'/%3E%3C/svg%3E" />
+  <!-- Favicon dari bentuk maskot yang sudah ada -- inline SVG, tanpa perlu file gambar tambahan -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='54' r='40' fill='%236C8EF0'/%3E%3Ccircle cx='38' cy='50' r='6' fill='%234A362B'/%3E%3Ccircle cx='62' cy='50' r='6' fill='%234A362B'/%3E%3Cellipse cx='50' cy='66' rx='8' ry='6' fill='%23FF8577'/%3E%3Ccircle cx='28' cy='60' r='6' fill='%23FFB4A8' opacity='0.8'/%3E%3Ccircle cx='72' cy='60' r='6' fill='%23FFB4A8' opacity='0.8'/%3E%3C/svg%3E" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Manrope:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&family=Caveat:wght@600&display=swap"
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="src/styles/tokens.css" />
+  <link rel="stylesheet" href="src/styles/variables.css" />
   <link rel="stylesheet" href="src/styles/base.css" />
   <link rel="stylesheet" href="src/styles/components.css" />
   <link rel="stylesheet" href="src/styles/sections.css" />
-  <link rel="stylesheet" href="src/styles/motion.css" />
+  <link rel="stylesheet" href="src/styles/animations.css" />
 </head>
 <body>
 
-  <div class="stage">
-    <div class="vignette" aria-hidden="true"></div>
-    <canvas class="grain-canvas" aria-hidden="true"></canvas>
-    <canvas class="ember-canvas motion-decorative" aria-hidden="true"></canvas>
+  <!-- Sprite mascot -- didefinisikan sekali, dipakai ulang di beberapa halaman -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="mascot-blob" viewBox="0 0 120 130">
+      <ellipse cx="60" cy="118" rx="34" ry="6" fill="var(--color-shadow)" />
+      <path d="M60 15 C90 15 105 40 105 68 C105 100 85 118 60 118 C35 118 15 100 15 68 C15 40 30 15 60 15 Z" fill="var(--color-primary-light)" />
+      <path d="M30 26 C21 14 32 2 46 10 C40 17 34 23 30 26 Z" fill="var(--color-primary-light)" />
+      <path d="M90 26 C99 14 88 2 74 10 C80 17 86 23 90 26 Z" fill="var(--color-primary-light)" />
+      <ellipse cx="60" cy="96" rx="25" ry="17" fill="var(--color-bg)" opacity="0.9" />
+      <circle cx="38" cy="72" r="7" fill="var(--color-blush)" opacity="0.7" />
+      <circle cx="82" cy="72" r="7" fill="var(--color-blush)" opacity="0.7" />
+      <path d="M42 58 Q48 50 54 58" stroke="var(--color-text)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <path d="M66 58 Q72 50 78 58" stroke="var(--color-text)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <ellipse cx="60" cy="72" rx="6" ry="7" fill="var(--color-mascot-mouth)" />
+      <circle cx="102" cy="50" r="9" fill="var(--color-primary-light)" />
+    </symbol>
+    <symbol id="mascot-annoyed" viewBox="0 0 120 130">
+      <ellipse cx="60" cy="118" rx="34" ry="6" fill="var(--color-shadow)" />
+      <path d="M60 15 C90 15 105 40 105 68 C105 100 85 118 60 118 C35 118 15 100 15 68 C15 40 30 15 60 15 Z" fill="var(--color-primary-light)" />
+      <path d="M30 26 C21 14 32 2 46 10 C40 17 34 23 30 26 Z" fill="var(--color-primary-light)" />
+      <path d="M90 26 C99 14 88 2 74 10 C80 17 86 23 90 26 Z" fill="var(--color-primary-light)" />
+      <ellipse cx="60" cy="96" rx="25" ry="17" fill="var(--color-bg)" opacity="0.9" />
+      <circle cx="38" cy="72" r="7" fill="var(--color-blush)" opacity="0.7" />
+      <circle cx="82" cy="72" r="7" fill="var(--color-blush)" opacity="0.7" />
+      <path d="M40 54 L54 60" stroke="var(--color-text)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <path d="M80 54 L66 60" stroke="var(--color-text)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <path d="M50 76 Q60 70 70 76" stroke="var(--color-mascot-mouth)" stroke-width="5" fill="none" stroke-linecap="round" />
+      <path d="M14 44 L22 48 M14 52 L22 50" stroke="var(--color-text-soft)" stroke-width="2.5" fill="none" stroke-linecap="round" />
+      <path d="M106 44 L98 48 M106 52 L98 50" stroke="var(--color-text-soft)" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    </symbol>
+    <symbol id="petal-flower" viewBox="0 0 40 40">
+      <g fill="var(--petal-color, var(--color-blush))">
+        <ellipse cx="20" cy="10" rx="6" ry="10" />
+        <ellipse cx="20" cy="10" rx="6" ry="10" transform="rotate(72 20 20)" />
+        <ellipse cx="20" cy="10" rx="6" ry="10" transform="rotate(144 20 20)" />
+        <ellipse cx="20" cy="10" rx="6" ry="10" transform="rotate(216 20 20)" />
+        <ellipse cx="20" cy="10" rx="6" ry="10" transform="rotate(288 20 20)" />
+      </g>
+      <circle cx="20" cy="20" r="5" fill="var(--color-secondary)" />
+    </symbol>
+  </svg>
 
-    <div class="letterbox" aria-hidden="true">
-      <div class="letterbox__bar letterbox__bar--top"></div>
-      <div class="letterbox__bar letterbox__bar--bottom"></div>
-      <div class="light-leak"></div>
+  <!-- Progress halaman & pil musik -- persisten di semua halaman -->
+  <div class="page-progress" data-page-progress aria-hidden="true"></div>
+
+  <div class="music-pill is-paused" data-music-pill>
+    <button class="music-pill__toggle" data-music-toggle aria-pressed="false" aria-label="Putar/jeda musik latar">▶</button>
+    <div class="music-pill__meta">
+      <div class="music-pill__title" data-music-title>Judul lagu</div>
+      <div class="music-pill__subtitle" data-music-subtitle>lagu latar</div>
     </div>
+    <div class="music-pill__bars motion-decorative" aria-hidden="true"><span></span><span></span><span></span></div>
+  </div>
 
-    <div class="timecode" aria-hidden="true">
-      <span class="timecode__track"><span class="timecode__fill"></span></span>
-      <span class="timecode__label">01 / 09</span>
+  <!-- Tombol kecil override preferensi motion (lihat motionPreference.js
+       & catatan di README soal kenapa ini penting untuk Android) -->
+  <button class="motion-toggle" type="button" data-motion-toggle aria-label="Ganti mode efek visual">
+    <span aria-hidden="true">✨</span>
+  </button>
+
+  <div class="page-backdrop">
+    <div class="atmosphere" data-atmosphere aria-hidden="true">
+      <div class="atmosphere__mesh"></div>
+      <div class="atmosphere__glow"></div>
+      <div class="atmosphere__noise"></div>
     </div>
-
-    <div class="now-playing is-paused" data-music-widget>
-      <button type="button" class="now-playing__toggle" data-music-toggle aria-label="Putar musik latar">▶</button>
-      <div class="now-playing__meta">
-        <p class="now-playing__title" data-music-title></p>
-        <p class="now-playing__subtitle" data-music-subtitle></p>
-      </div>
-      <div class="now-playing__bars motion-decorative" aria-hidden="true"><span></span><span></span><span></span></div>
-      <audio data-music-audio preload="none"></audio>
-    </div>
-
-    <!-- Tombol kecil override preferensi motion -- lihat motionPreference.js
-         & README soal kenapa ini penting untuk Android. -->
-    <button type="button" class="motion-toggle" data-motion-toggle aria-label="Ganti mode efek visual">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
-      </svg>
-    </button>
-
-    <main class="screen">
+    <main class="page">
 
       <!-- 1. GERBANG KATA SANDI -->
-      <section class="act act--gerbang is-active" data-act="gerbang" aria-label="Gerbang kata sandi">
-        <div class="viewfinder">
-          <span class="corner corner--tl" aria-hidden="true"></span>
-          <span class="corner corner--tr" aria-hidden="true"></span>
-          <span class="corner corner--bl" aria-hidden="true"></span>
-          <span class="corner corner--br" aria-hidden="true"></span>
-          <h1 data-gate-subtitle></h1>
-          <div class="frame-dots" data-gate-dots aria-hidden="true"></div>
-          <div class="keypad" data-gate-keypad></div>
-          <p class="hint-text" data-gate-hint role="status" aria-live="polite" aria-atomic="true"></p>
+      <section class="view is-active" id="gerbang">
+        <svg class="mascot mascot--wave motion-decorative pop-in" aria-hidden="true"><use href="#mascot-blob" /></svg>
+        <h1 class="fade-up fade-up--delay-1" data-key="gateSubtitle">coba tebak kodenya</h1>
+        <div class="keypad-dots fade-up fade-up--delay-2" data-gate-dots></div>
+        <div class="keypad fade-up fade-up--delay-2" data-gate-keypad>
+          <button class="keypad__key" data-key="1">1</button>
+          <button class="keypad__key" data-key="2">2</button>
+          <button class="keypad__key" data-key="3">3</button>
+          <button class="keypad__key" data-key="4">4</button>
+          <button class="keypad__key" data-key="5">5</button>
+          <button class="keypad__key" data-key="6">6</button>
+          <button class="keypad__key" data-key="7">7</button>
+          <button class="keypad__key" data-key="8">8</button>
+          <button class="keypad__key" data-key="9">9</button>
+          <span class="keypad__spacer" aria-hidden="true"></span>
+          <button class="keypad__key" data-key="0">0</button>
+          <button class="keypad__key keypad__key--action" data-key="back" aria-label="Hapus">⌫</button>
         </div>
+        <p class="hint-text fade-up fade-up--delay-3" data-gate-message data-key="passwordClue" aria-live="polite" aria-atomic="true">petunjuk</p>
       </section>
 
       <!-- 2. SAPAAN -->
-      <section class="act act--sapaan" data-act="sapaan" aria-label="Sapaan">
-        <h1 data-key="greetingText"></h1>
-        <button type="button" class="btn btn--primary" data-next data-key="greetingButton"></button>
+      <section class="view view--sweep" id="sapaan">
+        <svg class="mascot mascot--wave motion-decorative" aria-hidden="true"><use href="#mascot-blob" /></svg>
+        <h1 data-key="greetingText">hai!</h1>
+        <button class="btn" data-next data-key="greetingButton">lanjut</button>
       </section>
 
-      <!-- 3. KONFIRMASI (yes/no + reaksi tipografi kinetik kalau "noo") -->
-      <section class="act act--konfirmasi" data-act="konfirmasi" aria-label="Konfirmasi">
+      <!-- 3. KONFIRMASI (yes/no + reaksi lucu kalau pilih "noo") -->
+      <section class="view view--mask" id="konfirmasi">
         <div data-confirm-question>
-          <h2 data-confirm-question-text></h2>
+          <svg class="mascot" aria-hidden="true"><use href="#mascot-blob" /></svg>
+          <h2 data-key="confirmQuestion">udah siap buka kejutannya?</h2>
           <div class="confirm-actions">
-            <button type="button" class="btn btn--primary" data-confirm-yes></button>
-            <button type="button" class="btn btn--ghost" data-confirm-no></button>
+            <button class="btn" data-confirm-yes data-key="confirmYes">udah siap</button>
+            <button class="btn btn--ghost" data-confirm-no data-key="confirmNo">belum siap</button>
           </div>
         </div>
         <div data-confirm-reaction hidden>
-          <h2 data-confirm-reaction-text></h2>
-          <button type="button" class="btn btn--ghost" data-confirm-back></button>
+          <svg class="mascot is-shaking" aria-hidden="true"><use href="#mascot-annoyed" /></svg>
+          <h2 data-key="confirmReactionText">yaah, padahal udah aku siapin</h2>
+          <button class="btn btn--ghost" data-confirm-back data-key="confirmReactionButton">oke, siap sekarang</button>
         </div>
       </section>
 
       <!-- 4. REVEAL UMUR -->
-      <section class="act act--reveal" data-act="reveal" aria-label="Umur">
-        <p class="eyebrow" data-reveal-prefix></p>
-        <div class="reveal-number" data-reveal-number>0</div>
-        <h2 data-reveal-suffix></h2>
-        <button type="button" class="btn btn--primary" data-next data-reveal-button></button>
+      <section class="view view--blur" id="reveal">
+        <p class="eyebrow" data-key="revealPrefix">today, you turn</p>
+        <div class="reveal-number" data-reveal-number>16</div>
+        <h2 data-key="revealSuffix">happy birthday!!</h2>
+        <button class="btn" data-next data-key="revealButton">open it &lt;3</button>
       </section>
 
       <!-- 5. PESAN UTAMA -->
-      <section class="act" data-act="pesan-utama" aria-label="Pesan utama">
-        <div class="title-card viewfinder">
-          <span class="corner corner--tl" aria-hidden="true"></span>
-          <span class="corner corner--tr" aria-hidden="true"></span>
-          <span class="corner corner--bl" aria-hidden="true"></span>
-          <span class="corner corner--br" aria-hidden="true"></span>
-          <h2 data-key="mainMessageTitle"></h2>
-          <p data-key="mainMessageBody"></p>
+      <section class="view" id="pesan-utama">
+        <div class="card">
+          <h2 data-key="mainMessageTitle">happy birthday</h2>
+          <p data-key="mainMessageBody">Pesan hangat ada di sini.</p>
         </div>
-        <button type="button" class="btn btn--primary" data-next data-key="mainMessageButton"></button>
+        <button class="btn" data-next data-key="mainMessageButton">i have something for you</button>
       </section>
 
       <!-- 6. TRANSISI -->
-      <section class="act" data-act="transisi" aria-label="Transisi">
-        <p class="transition-text" data-key="transitionText"></p>
-        <button type="button" class="btn btn--ghost" data-next data-key="continueLabel"></button>
+      <section class="view view--sweep" id="transisi">
+        <p class="transition-text" data-key="transitionText">okayy last one...</p>
+        <button class="btn" data-next data-key="continueLabel">klik ini &lt;3</button>
       </section>
 
-      <!-- 7. KENANGAN -- dibuat JS, satu babak per foto+kalimat, persis
-           referensi (bukan grid foto terpisah dari teks) -->
-      <div data-memory-slot></div>
+      <!-- 7. KENANGAN -- dibuat JS, satu halaman per foto+kalimat,
+           persis referensi (bukan grid foto terpisah dari teks) -->
+      <div data-memory-pages></div>
 
-      <!-- 8. LAGU -->
-      <section class="act act--song" data-act="lagu" aria-label="Lagu">
-        <h2 data-key="songTitle"></h2>
-        <p data-key="songSubtitle"></p>
+      <!-- 8. LAGU KENANGAN -->
+      <section class="view view--blur" id="lagu">
+        <h2 data-key="songTitle">lagu-lagu buat kamu</h2>
+        <p data-key="songSubtitle">cerita singkat di sini</p>
         <div class="song-frame">
           <iframe
             data-key-src="spotifyEmbedSrc"
@@ -158,15 +193,15 @@
           ></iframe>
         </div>
         <p class="section--song__note">Kalau player di atas kosong, ganti dulu link playlist-nya di <code>content.js</code>.</p>
-        <button type="button" class="btn btn--primary" data-next data-key="continueLabel"></button>
+        <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>
 
       <!-- 9. SURAT PANJANG (scroll internal, tombol kembali ke awal di ujungnya) -->
-      <section class="act section--letter" data-act="surat" aria-label="Surat">
-        <div class="letter-scroll" data-letter-scroll>
-          <h2 class="letter-heading" data-letter-heading></h2>
+      <section class="view view--mask section--letter" id="surat">
+        <div class="letter-scroll" data-scroll-container>
+          <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
           <div class="letter-body" data-letter-body></div>
-          <button type="button" class="btn btn--ghost" data-restart></button>
+          <button class="btn" data-go-start data-key="closingButton">kembali ke awal</button>
         </div>
       </section>
 

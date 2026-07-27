@@ -1,315 +1,154 @@
 /* ==========================================================================
-   AKT (halaman) -- container generik. Peralihan visual sesungguhnya
-   terjadi di lapisan letterbox (base.css + pageFlow.js), bukan di sini --
-   supaya SATU bahasa transisi dipakai konsisten di semua babak, bukan
-   macam-macam efek per halaman.
+   HALAMAN (per id, karena situs ini page-based)
    ========================================================================== */
 
-.act {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  padding: var(--space-xl) var(--space-md) var(--space-lg);
-  text-align: center;
-  max-width: var(--content-width);
-  margin: 0 auto;
-  opacity: 0;
-  visibility: hidden;
-}
-
-.act.is-active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.act__title {
-  font-size: var(--fs-xl);
-  font-style: italic;
-  font-weight: 500;
-}
-
-.act__body {
-  color: var(--color-cream-dim);
-  font-size: var(--fs-base);
-  max-width: 24rem;
-}
-
-/* Sudut viewfinder -- motif berulang: kesan "sedang diarahkan kamera".
-   Dipakai di kartu pesan utama & gerbang. */
-.viewfinder {
-  position: relative;
-  padding: var(--space-lg) var(--space-md);
-}
-
-.corner {
-  position: absolute;
-  width: 1.1rem;
-  height: 1.1rem;
-  border: 1px solid var(--color-amber-deep);
-  opacity: 0.85;
-}
-
-.corner--tl { top: 0; left: 0; border-right: none; border-bottom: none; }
-.corner--tr { top: 0; right: 0; border-left: none; border-bottom: none; }
-.corner--bl { bottom: 0; left: 0; border-right: none; border-top: none; }
-.corner--br { bottom: 0; right: 0; border-left: none; border-top: none; }
-
-/* --------------------------------------------------------------------
-   1. GERBANG
-   -------------------------------------------------------------------- */
-
-.act--gerbang .eyebrow {
-  display: block;
-  margin-bottom: var(--space-2xs);
-}
-
-.act--gerbang h1 {
-  font-size: var(--fs-lg);
-  font-style: italic;
-  margin-bottom: var(--space-xs);
-}
-
+/* --- Teks kecil pendukung (dipakai di gerbang) --- */
 .hint-text {
-  font-size: var(--fs-xs);
-  color: var(--color-cream-faint);
-  letter-spacing: 0.03em;
+  font-size: var(--fs-sm);
+  color: var(--color-text-soft);
 }
 
-/* --------------------------------------------------------------------
-   2. SAPAAN
-   -------------------------------------------------------------------- */
-
-.act--sapaan h1 {
-  font-size: clamp(3rem, 14vw, 5rem);
-  font-style: italic;
+/* --- 1. Gerbang (password) -- judulnya h1, halaman pertama --- */
+#gerbang h1 {
+  font-size: var(--fs-xl);
+  max-width: 22ch;
 }
 
-/* --------------------------------------------------------------------
-   3. KONFIRMASI
-   -------------------------------------------------------------------- */
-
-.act--konfirmasi h2 {
+/* --- 2. Sapaan --- */
+#sapaan h1 {
   font-size: var(--fs-2xl);
-  font-style: italic;
-  margin-bottom: var(--space-md);
+}
+
+/* --- 3. Konfirmasi --- */
+#konfirmasi h2 {
+  font-size: var(--fs-lg);
+  max-width: 22ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .confirm-actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-[data-confirm-reaction] h2 {
-  color: var(--color-ember);
-}
-
-.is-glitching {
-  animation: text-glitch 380ms var(--ease-cut);
-}
-
-@keyframes text-glitch {
-  0% { opacity: 0; transform: translateY(6px); letter-spacing: 0.3em; }
-  60% { opacity: 1; transform: translateY(0); letter-spacing: 0; }
-  100% { opacity: 1; }
-}
-
-html.motion-reduced .is-glitching {
-  animation: none;
-}
-
-/* --------------------------------------------------------------------
-   4. REVEAL UMUR
-   -------------------------------------------------------------------- */
-
+/* --- 4. Reveal (angka umur) --- */
 .reveal-number {
   font-family: var(--font-display);
-  font-size: var(--fs-number);
-  font-weight: 600;
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* tiap digit lebar sama -- jadi tidak "goyang" pas dihitung naik (lihat animateAgeCountUp di main.js) */
+  color: var(--color-primary);
   line-height: 1;
-  color: var(--color-cream);
   position: relative;
+  min-width: 2ch; /* cadangkan lebar utk 2 digit dari awal, supaya elemen di bawahnya tidak ikut bergeser saat angka masih 1 digit di awal hitungan */
 }
 
-.reveal-number::after {
-  content: "";
-  display: block;
-  width: 3.5rem;
-  height: 2px;
-  margin: var(--space-xs) auto 0;
-  background: var(--color-amber);
-  box-shadow: 0 0 14px var(--glow-amber);
-}
-
-.reveal-number.is-flipping {
-  animation: number-flip 640ms var(--ease-drift);
-}
-
-@keyframes number-flip {
-  0% { transform: rotateX(0deg); filter: blur(0); }
-  40% { transform: rotateX(90deg); filter: blur(3px); }
-  60% { transform: rotateX(0deg); filter: blur(0); }
-}
-
-html.motion-reduced .reveal-number.is-flipping {
-  animation: none;
-}
-
-.act--reveal h2 {
-  font-size: var(--fs-lg);
-  font-style: italic;
-  color: var(--color-cream-dim);
-}
-
-/* --------------------------------------------------------------------
-   5. PESAN UTAMA -- "title card", bukan kartu kado
-   -------------------------------------------------------------------- */
-
-.title-card h2 {
-  font-size: var(--fs-2xl);
-  font-style: italic;
-  margin-bottom: var(--space-sm);
-}
-
-.title-card p {
-  color: var(--color-cream-dim);
-}
-
-/* --------------------------------------------------------------------
-   6. TRANSISI -- interlude singkat, redup, hampir seperti "kartu hitam"
-   -------------------------------------------------------------------- */
-
-.transition-text {
-  font-size: var(--fs-lg);
-  color: var(--color-cream-dim);
-  font-style: italic;
-}
-
-/* --------------------------------------------------------------------
-   7. KENANGAN
-   -------------------------------------------------------------------- */
-
-.section--memory {
-  gap: var(--space-lg);
-}
-
-.memory-line {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--fs-lg);
-  max-width: 22rem;
-  color: var(--color-cream);
-}
-
-/* --------------------------------------------------------------------
-   8. LAGU
-   -------------------------------------------------------------------- */
-
-.act--song h2 {
+#reveal h2 {
   font-size: var(--fs-xl);
-  font-style: italic;
 }
 
+/* --- 5. Pesan utama ---
+   Ini "puncak" alur cerita -- pesan inti yang semua halaman
+   sebelumnya bangun menujunya. Dibuat sedikit lebih menonjol
+   daripada .card biasa: cincin gradasi lembut di sekelilingnya
+   (bukan cuma shadow polos) supaya terasa seperti dijaga cahaya,
+   dan kartu tetap solid/opaque (kontras dgn kanvas kaca di
+   belakangnya) supaya terasa jadi pijakan yang kokoh. */
+#pesan-utama .card {
+  max-width: 380px;
+  position: relative;
+  background: var(--color-surface);
+  box-shadow:
+    0 1px 2px var(--color-shadow),
+    0 20px 40px -20px var(--color-shadow),
+    0 0 0 1px rgba(var(--aurora-3), 0.25);
+}
+
+#pesan-utama .card::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(var(--aurora-2), 0.7), rgba(var(--aurora-3), 0.7), rgba(var(--aurora-4), 0.7));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* --- 6. Transisi --- */
+.transition-text {
+  font-family: var(--font-accent);
+  font-size: var(--fs-xl);
+  color: var(--color-primary);
+  max-width: 18ch;
+}
+
+/* --- 8. Lagu ---
+   iframe dibungkus .song-frame (kartu kaca) supaya terasa jadi bagian
+   dari bahasa visual situs yang sama, bukan kotak mengambang sendiri. */
 .song-frame {
   width: 100%;
-  max-width: 22rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2xs);
-  background: var(--color-void-2);
+  max-width: 340px;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+  box-shadow: var(--shadow-card);
 }
 
-.song-frame iframe {
-  width: 100%;
-  border: none;
-  border-radius: var(--radius-xs);
+#lagu iframe {
   display: block;
+  width: 100%;
+  border-radius: calc(var(--radius-md) - 4px);
+  border: none;
 }
 
 .section--song__note {
-  font-size: var(--fs-2xs);
-  color: var(--color-cream-faint);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+  max-width: 32ch;
 }
 
-.section--song__note code {
-  color: var(--color-amber);
-}
-
-/* --------------------------------------------------------------------
-   9. SURAT PANJANG -- manuskrip, scroll internal
-   -------------------------------------------------------------------- */
-
+/* --- 10. Surat panjang --- 
+   Satu-satunya halaman yang scroll internal, jadi layoutnya beda:
+   isi (.letter-scroll) mengisi penuh tinggi halaman, bukan
+   di-center seperti halaman lain. Dibungkus nuansa kertas/buku fisik:
+   dasar krem hangat + tekstur serat halus + bayangan tepi kiri yang
+   mensimulasikan lipatan/ketebalan halaman buku. */
 .section--letter {
+  padding: 0;
+  align-items: stretch;
   justify-content: flex-start;
-  padding-top: var(--space-lg);
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(74, 54, 43, 0.07), transparent 5%),
+    var(--color-bg-soft);
 }
 
-.letter-scroll {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior-y: contain;
-  padding: var(--space-md) 0 var(--space-xl);
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-amber-deep) transparent;
+.section--letter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
 }
 
-.letter-heading {
-  font-size: var(--fs-2xl);
-  font-style: italic;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity var(--dur-slow) var(--ease-drift), transform var(--dur-slow) var(--ease-drift);
-  margin-bottom: var(--space-lg);
-}
-
-.letter-heading.is-revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.letter-body {
+.section--letter .letter-scroll {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  padding-bottom: var(--space-lg);
-}
-
-.letter-sentence {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--fs-lg);
-  color: var(--color-cream-faint);
-  transition: color var(--dur-base) var(--ease-drift), opacity var(--dur-base);
-  opacity: 0.55;
-}
-
-.letter-sentence.is-active {
-  color: var(--color-cream);
-  opacity: 1;
-}
-
-.letter-sentence.is-typing::after {
-  content: "";
-  display: inline-block;
-  width: 0.5em;
-  height: 1em;
-  margin-left: 0.1em;
-  background: var(--color-amber);
-  vertical-align: text-bottom;
-  animation: caret-blink 900ms steps(1) infinite;
-}
-
-@keyframes caret-blink {
-  50% { opacity: 0; }
-}
-
-.section--letter .btn {
-  align-self: center;
-  margin-top: var(--space-sm);
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  position: relative;
+  z-index: 1;
 }

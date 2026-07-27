@@ -1,32 +1,42 @@
 /**
  * Preferensi motion terpusat.
  *
- * Kenapa modul ini perlu ada: banyak HP Android melaporkan
- * `prefers-reduced-motion: reduce` bukan karena penggunanya benar-benar
- * memintanya, tapi karena mode hemat baterai/performa bawaan OS. Kalau
- * tiap efek (grain, ember, tilt, dst) memanggil matchMedia sendiri-sendiri,
- * situs ini bisa terasa "mati" di banyak Android tanpa pengunjungnya
- * pernah benar-benar minta itu.
+ * Kenapa modul ini ada: sebelumnya tiap fitur (flowerIntro, confetti,
+ * tiltEffect, letterScrub) memanggil `matchMedia("(prefers-reduced-motion:
+ * reduce)")` sendiri-sendiri. Itu sebenarnya praktik aksesibilitas yang
+ * benar SECARA UMUM -- tapi banyak HP Android melaporkan
+ * prefers-reduced-motion:reduce bukan karena penggunanya sengaja minta
+ * itu, melainkan karena mode hemat baterai/performa bawaan OS (mis.
+ * MIUI "Hapus Animasi", atau skala animasi di Opsi Pengembang yang
+ * di-set ke 0 oleh sebagian pengguna power-user). Akibatnya hampir
+ * semua animasi situs ini mati di Android tanpa pengunjungnya pernah
+ * benar-benar memintanya.
  *
- * Modul ini menggabungkan sinyal OS dengan pilihan manual (localStorage,
- * bertahan lintas kunjungan) jadi SATU sumber kebenaran: isMotionReduced().
- * Modul lain tinggal mengimpor fungsi ini.
+ * Modul ini menggabungkan sinyal OS dengan pilihan manual pengguna
+ * (disimpan di localStorage, bertahan lintas kunjungan) jadi SATU
+ * sumber kebenaran: `isMotionReduced()`. Modul lain tinggal
+ * mengimpor fungsi ini alih-alih memanggil matchMedia sendiri-sendiri.
+ *
+ * Class `motion-reduced` / `motion-full` juga ditambahkan ke <html>
+ * supaya CSS bisa ikut bereaksi (lihat variables.css & base.css --
+ * class ini sengaja dibuat lebih spesifik daripada media query
+ * `prefers-reduced-motion`, supaya pilihan manual pengguna menang atas
+ * sinyal OS yang keliru).
  */
 
-const STORAGE_KEY = "golden-hour:motion";
-const ORDER = ["auto", "full", "reduced"];
+const STORAGE_KEY = "untuk-adik:motion-preference"; // "auto" | "full" | "reduced"
 
-let preference = "auto";
-let ready = false;
+let currentPreference = "auto";
+let initialized = false;
 
-function systemWantsReduced() {
+function systemPrefersReduced() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function resolve() {
-  if (preference === "full") return false;
-  if (preference === "reduced") return true;
-  return systemWantsReduced();
+  if (currentPreference === "full") return false;
+  if (currentPreference === "reduced") return true;
+  return systemPrefersReduced();
 }
 
 function applyToDocument() {
@@ -36,41 +46,53 @@ function applyToDocument() {
   document.dispatchEvent(new CustomEvent("motion:change", { detail: { reduced } }));
 }
 
+/**
+ * Nilai motion yang berlaku SEKARANG (sudah menggabungkan pilihan
+ * manual + sinyal OS). Aman dipanggil kapan saja setelah
+ * initMotionPreference() dijalankan sekali di awal.
+ */
 export function isMotionReduced() {
   return resolve();
 }
 
+/** Setup awal -- dipanggil sekali paling awal di main.js. */
 export function initMotionPreference() {
-  if (ready) return;
-  ready = true;
+  if (initialized) return { isReduced: isMotionReduced, getPreference: () => currentPreference, setPreference };
+  initialized = true;
 
   try {
-    preference = localStorage.getItem(STORAGE_KEY) || "auto";
+    currentPreference = localStorage.getItem(STORAGE_KEY) || "auto";
   } catch {
-    // localStorage bisa diblokir (mode privat ketat) -- diamkan, tetap
-    // jalan dengan "auto" untuk sesi ini.
+    // localStorage bisa diblokir (mis. mode privat ketat) -- diamkan,
+    // tetap jalan dengan default "auto" untuk sesi ini.
   }
 
   applyToDocument();
 
+  // Selama masih "auto", tetap ikuti perubahan sinyal OS secara live
+  // (mis. pengguna menyalakan mode hemat baterai saat situs sudah
+  // terbuka).
   window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => {
-    if (preference === "auto") applyToDocument();
+    if (currentPreference === "auto") applyToDocument();
   });
+
+  return { isReduced: isMotionReduced, getPreference: () => currentPreference, setPreference };
 }
 
 function setPreference(next) {
-  preference = next;
+  currentPreference = next;
   try {
     localStorage.setItem(STORAGE_KEY, next);
   } catch {
-    // diamkan -- preferensi berlaku untuk sesi ini saja
+    // diamkan -- preferensi tetap berlaku untuk sesi ini saja
   }
   applyToDocument();
 }
 
 /**
- * Tombol kecil (ikon aperture) untuk menimpa sinyal OS secara sadar.
- * Siklus 3 keadaan tiap diketuk: auto -> full -> reduced -> auto.
+ * Tombol kecil "Efek visual: Otomatis/Penuh/Hemat" -- memberi
+ * pengunjung kendali sadar untuk menimpa sinyal OS yang mungkin keliru
+ * (lihat catatan di atas). Siklus 3 keadaan tiap diketuk.
  */
 export function initMotionToggle() {
   const btn = document.querySelector("[data-motion-toggle]");
@@ -81,14 +103,16 @@ export function initMotionToggle() {
     full: "Efek visual: Penuh",
     reduced: "Efek visual: Hemat",
   };
+  const ORDER = ["auto", "full", "reduced"];
 
   function render() {
-    btn.dataset.state = preference;
-    btn.setAttribute("aria-label", `${LABELS[preference]}. Ketuk untuk ganti mode.`);
+    const pref = currentPreference;
+    btn.dataset.state = pref;
+    btn.setAttribute("aria-label", `${LABELS[pref]}. Ketuk untuk ganti mode.`);
   }
 
   btn.addEventListener("click", () => {
-    const next = ORDER[(ORDER.indexOf(preference) + 1) % ORDER.length];
+    const next = ORDER[(ORDER.indexOf(currentPreference) + 1) % ORDER.length];
     setPreference(next);
     render();
   });

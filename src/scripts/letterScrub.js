@@ -1,141 +1,142 @@
-import { content } from "../data/content.js";
 import { isMotionReduced } from "./motionPreference.js";
 
 /**
- * Efek "sorotan baca" di surat panjang: kalimat yang PALING DEKAT ke
- * tengah container menyala penuh & diketik huruf demi huruf, sisanya
- * meredup. Jangkauan sorotan dihitung dari jarak piksel NYATA antar
- * kalimat di layar (bukan persentase tinggi container) -- pendekatan
- * persentase sempat bikin beberapa kalimat menyala bersamaan kalau
- * jarak antar kalimat tidak seragam.
+ * Efek "sorotan baca" untuk surat panjang: kalimat yang paling
+ * dekat ke tengah layar menyala (warna biru, penuh) dan diketik
+ * huruf demi huruf, yang lain meredup. Dihitung dari posisi elemen
+ * saat scroll, bukan IntersectionObserver biasa, supaya terasa
+ * mengikuti posisi baca.
  */
-
-let scrollEl, headingEl, sentences = [];
-let ticking = false;
-
-function lockHeightsThenClear() {
-  // Kalimat diukur dalam keadaan PENUH dulu -- supaya posisi/jaraknya
-  // akurat untuk perhitungan sorotan sejak awal -- baru tinggi aslinya
-  // dikunci lewat min-height dan teksnya dikosongkan. Kalau langsung
-  // dikosongkan tanpa dikunci, elemen collapse ke tinggi 0 dan
-  // margin-nya "menyatu" dengan tetangganya, merusak semua jarak yang
-  // dipakai efek ini.
-  sentences.forEach((el) => {
-    const height = el.getBoundingClientRect().height;
-    el.style.minHeight = `${height}px`;
-    el.textContent = "";
-    el.dataset.typed = "";
-  });
-}
-
-function typeSentence(el) {
-  if (el.dataset.typed === "true") return;
-  el.dataset.typed = "true";
-
-  const text = el.dataset.fullText;
-  el.classList.add("is-typing");
-  let i = 0;
-
-  (function typeChar() {
-    el.textContent = text.slice(0, i);
-    i++;
-    if (i <= text.length) {
-      setTimeout(typeChar, 16 + Math.random() * 14);
-    } else {
-      el.classList.remove("is-typing");
-    }
-  })();
-}
-
-function updateSpotlight() {
-  const containerRect = scrollEl.getBoundingClientRect();
-  const focusY = containerRect.top + containerRect.height / 2;
-
-  // Pitch = jarak nyata (piksel) antar pusat dua kalimat pertama --
-  // dipakai sebagai satuan "berapa dekat dianggap aktif", otomatis
-  // menyesuaikan ukuran font/line-height/viewport tanpa perlu di-tune
-  // ulang manual.
-  let pitch = 140;
-  if (sentences.length > 1) {
-    const r0 = sentences[0].getBoundingClientRect();
-    const r1 = sentences[1].getBoundingClientRect();
-    const measured = Math.abs(r1.top + r1.height / 2 - (r0.top + r0.height / 2));
-    if (measured > 0) pitch = measured;
-  }
-  const activeRange = pitch * 0.55;
-
-  sentences.forEach((el) => {
-    const rect = el.getBoundingClientRect();
-    const center = rect.top + rect.height / 2;
-    const isActive = Math.abs(center - focusY) < activeRange;
-    el.classList.toggle("is-active", isActive);
-    if (isActive) typeSentence(el);
-  });
-}
-
-function onScroll() {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(() => {
-    updateSpotlight();
-    ticking = false;
-  });
-}
-
-function handleSettled(e) {
-  if (e.detail.act?.dataset.act !== "surat") return;
-  headingEl.classList.add("is-revealed");
-  updateSpotlight();
-}
-
-function reset() {
-  scrollEl.scrollTop = 0;
-  headingEl.classList.remove("is-revealed");
-  sentences.forEach((el) => el.classList.remove("is-active", "is-typing"));
-  if (!isMotionReduced()) lockHeightsThenClear();
-}
-
 export function initLetterScrub() {
-  const root = document.querySelector('[data-act="surat"]');
-  if (!root) return;
+  const container = document.querySelector("[data-scroll-container]");
+  const sentences = [...document.querySelectorAll(".letter-sentence")];
+  const heading = document.querySelector(".letter-heading");
+  const letterView = document.querySelector("#surat");
 
-  scrollEl = root.querySelector("[data-letter-scroll]");
-  headingEl = root.querySelector("[data-letter-heading]");
-  const bodyEl = root.querySelector("[data-letter-body]");
-  const restartBtn = root.querySelector("[data-restart]");
+  initClosingSeal();
 
-  headingEl.textContent = content.letterHeading;
-  restartBtn.textContent = content.closingButton;
-
-  bodyEl.innerHTML = "";
-  content.letterBody.forEach((sentenceText) => {
-    const p = document.createElement("p");
-    p.className = "letter-sentence";
-    p.dataset.fullText = sentenceText;
-    p.textContent = sentenceText; // tampil penuh dulu -- lihat lockHeightsThenClear()
-    bodyEl.appendChild(p);
-  });
-  sentences = Array.from(bodyEl.querySelectorAll(".letter-sentence"));
+  if (!container || !sentences.length) {
+    revealHeadingOnSettle(letterView, heading);
+    return;
+  }
 
   if (isMotionReduced()) {
     sentences.forEach((el) => el.classList.add("is-active"));
-  } else {
-    lockHeightsThenClear();
-    scrollEl.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    revealHeadingOnSettle(letterView, heading);
+    return;
   }
 
-  // Micro-interaction "menyegel surat" -- cincin cahaya sekali pancar,
-  // berjalan PARALEL dengan navigasi pageFlow.js (lewat [data-restart]),
-  // tidak menunda ataupun mengubah kapan halaman benar-benar berpindah.
-  restartBtn.addEventListener("click", () => {
-    if (isMotionReduced()) return;
-    restartBtn.classList.add("is-sealing");
-    setTimeout(() => restartBtn.classList.remove("is-sealing"), 700);
+  // Simpan teks asli sebelum dikosongkan, supaya bisa diketik ulang
+  // huruf demi huruf begitu kalimatnya pertama kali "disorot".
+  // Tinggi elemen dikunci dulu SEBELUM teksnya dikosongkan -- kalau
+  // tidak, elemen kosong akan collapse ke tinggi 0 dan margin-nya
+  // "collapse" bareng elemen sebelah, merusak semua perhitungan
+  // posisi yang dipakai efek sorotan-baca ini.
+  const fullTexts = new WeakMap();
+  sentences.forEach((el) => {
+    fullTexts.set(el, el.textContent);
+    const naturalHeight = el.getBoundingClientRect().height;
+    el.style.minHeight = `${naturalHeight}px`;
+    el.textContent = "";
   });
 
-  document.addEventListener("view:settled", handleSettled);
-  document.addEventListener("experience:restart", reset);
+  function typeSentence(el) {
+    if (el.dataset.typed) return;
+    el.dataset.typed = "true";
 
-  if (root.classList.contains("is-active")) updateSpotlight();
+    const text = fullTexts.get(el) ?? "";
+    el.classList.add("is-typing");
+    let i = 0;
+
+    (function typeChar() {
+      el.textContent = text.slice(0, i);
+      i++;
+      if (i <= text.length) {
+        setTimeout(typeChar, 16 + Math.random() * 14);
+      } else {
+        el.classList.remove("is-typing");
+      }
+    })();
+  }
+
+  let ticking = false;
+
+  function update() {
+    const containerRect = container.getBoundingClientRect();
+    const viewportCenter = containerRect.top + containerRect.height / 2;
+
+    // Radius sorotan dihitung dari jarak NYATA antar-kalimat di
+    // layar (bukan persentase tinggi container -- itu tidak
+    // berhubungan dengan spacing konten, dan sempat bikin banyak
+    // kalimat aktif sekaligus). Dengan ini, kira-kira cuma satu
+    // kalimat yang aktif di satu waktu, seberapa pun jarak asli
+    // antar-kalimatnya (svh menyesuaikan tinggi layar otomatis).
+    let pitch = 140;
+    if (sentences.length > 1) {
+      const r0 = sentences[0].getBoundingClientRect();
+      const r1 = sentences[1].getBoundingClientRect();
+      pitch = Math.abs((r1.top + r1.height / 2) - (r0.top + r0.height / 2)) || pitch;
+    }
+    const activeRange = pitch * 0.55;
+
+    sentences.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const elCenter = rect.top + rect.height / 2;
+      const distance = Math.abs(elCenter - viewportCenter);
+      const isActive = distance < activeRange;
+
+      el.classList.toggle("is-active", isActive);
+      if (isActive) typeSentence(el);
+    });
+
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  container.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  // Hitung ulang tepat saat halaman surat benar-benar selesai
+  // bertransisi masuk (bukan sekali di awal load halaman, saat
+  // halaman ini belum tampil dan geometrinya belum akurat).
+  letterView?.addEventListener("view:settled", update);
+  revealHeadingOnSettle(letterView, heading);
+
+  // Jaga-jaga kalau halaman ini entah bagaimana sudah aktif duluan
+  // saat modul ini diinisialisasi.
+  if (letterView?.classList.contains("is-active")) update();
+}
+
+/** Judul surat "muncul" halus sekali, tepat saat halaman ini settle. */
+function revealHeadingOnSettle(letterView, heading) {
+  if (!heading) return;
+  const reveal = () => heading.classList.add("is-revealed");
+  if (letterView?.classList.contains("is-active")) {
+    reveal();
+    return;
+  }
+  letterView?.addEventListener("view:settled", reveal, { once: true });
+}
+
+/**
+ * Micro-interaction "menyegel surat" -- cincin cahaya hangat sekali
+ * pancar saat tombol "kembali ke awal" ditekan. Murni dekoratif,
+ * dijalankan PARALEL dengan listener navigasi pageFlow.js (lewat
+ * data-go-start) -- tidak menunda ataupun mengubah kapan halaman
+ * benar-benar berpindah.
+ */
+function initClosingSeal() {
+  const btn = document.querySelector("#surat [data-go-start]");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    if (isMotionReduced()) return;
+    btn.classList.add("is-sealing");
+    setTimeout(() => btn.classList.remove("is-sealing"), 700);
+  });
 }

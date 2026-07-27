@@ -1,7 +1,8 @@
 /**
- * PRNG kecil berbasis seed (mulberry32) -- dipakai supaya kemiringan
- * frame foto "acak" tapi konsisten untuk foto yang sama tiap kali halaman
- * dirender ulang, bukan berubah-ubah/berkedip tiap reload.
+ * PRNG kecil berbasis seed (mulberry32) -- dipakai supaya dekorasi
+ * "acak" seperti rotasi polaroid & posisi washi tape konsisten untuk
+ * foto yang sama tiap kali halaman dirender ulang, bukan berubah-ubah
+ * dan terasa "berkedip" tiap reload.
  */
 export function createSeededRandom(seed) {
   let a = seed >>> 0;

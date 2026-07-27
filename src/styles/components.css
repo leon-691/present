@@ -1,452 +1,620 @@
 /* ==========================================================================
-   TOMBOL
+   COMPONENTS
    ========================================================================== */
 
+/* --- Button ---
+   Gaya "3D pressable": ada tepi solid di bawah tombol (box-shadow
+   offset warna gelap) yang mengecil saat ditekan, seolah tombolnya
+   benar-benar turun ke dalam permukaannya. Ditambah efek kilau tipis
+   yang menyapu saat hover. */
 .btn {
-  position: relative;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2xs);
-  padding: 0.85rem 1.9rem;
-  font-size: var(--fs-sm);
+  gap: 0.5em;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9em 1.8em;
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
   font-weight: 600;
-  letter-spacing: 0.01em;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  transition: transform var(--dur-fast) var(--ease-press), background var(--dur-fast), box-shadow var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-  transform: translate(var(--magnet-x, 0), var(--magnet-y, 0));
+  color: #fff;
+  background: var(--color-primary);
+  box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  --magnet-x: 0px;
+  --magnet-y: 0px;
+  transform: translate(var(--magnet-x), var(--magnet-y));
+  transition: transform 150ms var(--ease-press),
+              box-shadow 150ms var(--ease-press),
+              background var(--dur-fast) var(--ease-out-soft);
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 550ms ease;
+  pointer-events: none;
+}
+
+.btn:hover::before {
+  transform: translateX(120%);
+}
+
+.btn:hover {
+  background: var(--color-primary-dark);
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(-2px);
+  box-shadow: 0 7px 0 var(--color-primary-dark), var(--shadow-pop);
 }
 
 .btn:active {
-  transform: translate(var(--magnet-x, 0), var(--magnet-y, 0)) scale(0.96);
-}
-
-.btn--primary {
-  border-color: var(--color-amber);
-  color: var(--color-void);
-  background: var(--color-amber);
-  box-shadow: 0 0 0 var(--glow-amber);
-}
-
-.btn--primary:hover {
-  background: var(--color-amber-bright);
-  box-shadow: 0 0 26px var(--glow-amber);
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(3px);
+  box-shadow: 0 2px 0 var(--color-primary-dark);
 }
 
 .btn--ghost {
   background: transparent;
-  color: var(--color-cream);
-  border-color: var(--color-line-bright);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  box-shadow: none;
 }
 
 .btn--ghost:hover {
-  border-color: var(--color-amber);
-  color: var(--color-amber-bright);
-  background: rgba(var(--color-amber-rgb), 0.08);
-  box-shadow: 0 0 22px rgba(var(--color-amber-rgb), 0.15);
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: none;
 }
 
+.btn--ghost:active {
+  transform: translate(var(--magnet-x), var(--magnet-y)) translateY(1px) scale(0.97);
+  box-shadow: none;
+}
+
+/* Saat magnet aktif (lihat cursorGlow.js), tambah transisi khusus utk
+   --magnet-x/-y supaya pull-nya terasa lentur, bukan langsung nempel */
 .btn.is-magnet-active {
-  transition: background var(--dur-fast), box-shadow var(--dur-fast);
+  transition: transform 220ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-press),
+              background var(--dur-fast) var(--ease-out-soft);
 }
 
-/* Efek "menyegel" -- cincin cahaya sekali pancar dari tombol saat ditekan
-   di halaman surat (lihat letterScrub.js). Murni dekoratif. */
-.btn.is-sealing::after {
-  content: "";
+/* --- Halaman (view) --- 
+   Semua .view ditumpuk pas di posisi yang sama (position:absolute)
+   supaya bisa crossfade mulus -- hanya satu yang interaktif
+   (.is-active) di satu waktu. Berpindah halaman = fade + depth
+   (scale/rotateX ringan), bukan potong kasar. */
+.view {
   position: absolute;
-  inset: -40%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--color-cream-rgb), 0.9), transparent 70%);
-  animation: seal-pulse 700ms var(--ease-cut) forwards;
-}
-
-@keyframes seal-pulse {
-  0% {
-    opacity: 0.9;
-    transform: scale(0.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.2);
-  }
-}
-
-/* Ripple feedback (lihat rippleEffect.js) */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(var(--color-cream-rgb), 0.35);
-  transform: scale(0);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-lg) var(--space-md) calc(var(--space-lg) + 64px);
+  overflow-y: auto;
+  opacity: 0;
   pointer-events: none;
-  animation: ripple-out 560ms var(--ease-cut) forwards;
+  transform: perspective(1000px) scale(0.94) translateY(22px) rotateX(3deg);
+  transition: opacity var(--dur-page) var(--ease-page),
+              transform var(--dur-page) var(--ease-page);
+  backface-visibility: hidden;
+  /* Container ini jadi target fokus terprogram tiap kali halaman
+     berpindah (lihat pageFlow.js -- supaya screen reader/keyboard
+     user "masuk" ke halaman baru, bukan sekadar disembunyikan). Bukan
+     dimaksudkan untuk ditandai visual sebagai satu kotak besar, jadi
+     outline-nya dimatikan di sini -- tombol/tautan di dalamnya tetap
+     dapat outline fokus normal dari :focus-visible seperti biasa. */
+  outline: none;
 }
 
-html.motion-reduced .ripple {
-  display: none;
+.view.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: perspective(1000px) scale(1) translateY(0) rotateX(0deg);
+  z-index: 2;
 }
 
-@keyframes ripple-out {
-  to {
-    transform: scale(1);
-    opacity: 0;
-  }
+.view.is-leaving {
+  opacity: 0;
+  transform: perspective(1000px) scale(1.05) translateY(-18px) rotateX(-2deg);
+  z-index: 1;
+  pointer-events: none;
 }
 
-/* ==========================================================================
-   KEYPAD -- "penghitung reel projector", bukan keypad HP bulat
-   ========================================================================== */
+.view > * + * {
+  margin-top: var(--space-sm);
+}
+
+.eyebrow {
+  font-family: var(--font-accent);
+  font-size: var(--fs-xl);
+  color: var(--color-primary);
+  margin-bottom: 0.2em;
+}
+
+/* --- Mascot blob (signature character, pure CSS/SVG, no external art needed) --- */
+.mascot {
+  width: 120px;
+  height: auto;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* --- Password keypad --- */
+.keypad-clue {
+  font-family: var(--font-accent);
+  font-size: var(--fs-lg);
+  color: var(--color-text-soft);
+  margin-bottom: var(--space-sm);
+}
+
+.keypad-dots {
+  display: flex;
+  gap: 0.6em;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+}
+
+.keypad-dots__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-out-soft),
+              transform var(--dur-fast) var(--ease-out-soft);
+}
+
+.keypad-dots__dot.is-filled {
+  background: var(--color-primary);
+  transform: scale(1.15);
+}
+
+.keypad-dots.is-error .keypad-dots__dot {
+  border-color: #E85D5D;
+}
 
 .keypad {
   display: grid;
-  grid-template-columns: repeat(3, 4.2rem);
-  gap: var(--space-2xs);
-  justify-content: center;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7em;
+  width: 100%;
+  max-width: 300px;
 }
 
 .keypad__key {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  box-shadow: 0 4px 0 var(--color-border), var(--shadow-pop);
+  transition: transform 150ms var(--ease-press), box-shadow 150ms var(--ease-press);
   position: relative;
   overflow: hidden;
-  height: 3.6rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-xs);
-  background: var(--color-void-2);
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  color: var(--color-cream);
-  transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
+  isolation: isolate;
 }
 
 .keypad__key:hover {
-  border-color: var(--color-amber);
-  color: var(--color-amber-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--color-border), var(--shadow-pop);
 }
 
 .keypad__key:active {
-  background: var(--color-void-3);
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 1px 0 var(--color-border);
 }
 
 .keypad__key--action {
   font-size: var(--fs-base);
-  color: var(--color-cream-dim);
+  color: var(--color-text-soft);
 }
 
 .keypad__spacer {
   visibility: hidden;
 }
 
-/* Indikator kode -- deretan "frame tick" seperti hitungan film, bukan
-   titik bulat. Terisi amber saat digit dimasukkan. */
-.frame-dots {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2xs);
-}
-
-.frame-dots__tick {
-  width: 0.55rem;
-  height: 1.1rem;
-  border: 1px solid var(--color-line-bright);
-  border-radius: 1px;
-  transition: background var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
-}
-
-.frame-dots__tick.is-filled {
-  background: var(--color-amber);
-  border-color: var(--color-amber);
-  box-shadow: 0 0 12px var(--glow-amber);
-}
-
-.frame-dots.is-error .frame-dots__tick {
-  border-color: var(--color-ember);
-}
-
-.frame-dots.is-error .frame-dots__tick.is-filled {
-  background: var(--color-ember);
-  box-shadow: 0 0 12px var(--glow-ember);
-}
-
-.frame-dots.is-shaking {
-  animation: gate-glitch 420ms var(--ease-cut);
-}
-
-@keyframes gate-glitch {
+@keyframes shake {
   0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(5px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(3px); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
 }
 
-html.motion-reduced .frame-dots.is-shaking {
+.is-shaking {
+  animation: shake 420ms var(--ease-out-soft);
+}
+
+/* Shake ini murni penguat visual -- info "kode salah" sudah
+   tersampaikan lewat warna (.is-error) & teks pesan (sudah
+   aria-live, lihat index.html), jadi aman dimatikan saat
+   reduced-motion. Gerakan bolak-balik cepat seperti ini justru
+   termasuk jenis animasi yang paling berpotensi mengganggu secara
+   vestibular, jadi sengaja TIDAK dianggap "esensial". */
+html.motion-reduced .is-shaking {
   animation: none;
 }
 
-/* ==========================================================================
-   TIMECODE BAR -- pengganti progress bar generik, persisten di atas
-   ========================================================================== */
-
-.timecode {
+/* --- Floating music pill (persistent across the whole page) --- */
+.music-pill {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-2xs) var(--space-sm);
-  pointer-events: none;
-}
-
-.timecode__track {
-  flex: 1;
-  height: 1px;
-  background: var(--color-line);
-  position: relative;
-}
-
-.timecode__fill {
-  position: absolute;
-  inset: 0;
-  width: 0%;
-  background: var(--color-amber);
-  box-shadow: 0 0 8px var(--glow-amber);
-  transition: width var(--dur-base) var(--ease-drift);
-}
-
-.timecode__label {
-  font-family: var(--font-body);
-  font-size: var(--fs-2xs);
-  letter-spacing: var(--tracking-label);
-  color: var(--color-cream-dim);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ==========================================================================
-   NOW PLAYING -- widget musik mengambang
-   ========================================================================== */
-
-.now-playing {
-  position: fixed;
-  left: var(--space-sm);
+  left: 50%;
   bottom: var(--space-sm);
-  z-index: 30;
+  transform: translateX(-50%);
+  z-index: 50;
   display: flex;
   align-items: center;
-  gap: var(--space-2xs);
-  padding: 0.6rem 0.9rem;
+  gap: 0.6em;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
   border-radius: 999px;
-  border: 1px solid var(--color-line);
-  background: rgba(29, 23, 18, 0.72);
-  backdrop-filter: blur(10px);
-  max-width: min(78vw, 15.5rem);
-  transition: border-color var(--dur-fast);
+  padding: 0.5em 0.9em 0.5em 0.5em;
+  box-shadow: var(--shadow-card);
+  max-width: calc(var(--content-width) - 2 * var(--space-md));
+  width: calc(100% - 2 * var(--space-md));
 }
 
-.now-playing__toggle {
+.music-pill__toggle {
   flex-shrink: 0;
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--color-line-bright);
-  display: grid;
-  place-items: center;
-  font-size: 0.7rem;
-  color: var(--color-amber-bright);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
 }
 
-.now-playing__meta {
+.music-pill__meta {
   overflow: hidden;
-  line-height: 1.2;
+  text-align: left;
+  flex: 1;
 }
 
-.now-playing__title {
+.music-pill__title {
   font-size: var(--fs-xs);
   font-weight: 600;
-  color: var(--color-cream);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.now-playing__subtitle {
-  font-size: var(--fs-2xs);
-  color: var(--color-cream-dim);
+.music-pill__subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.now-playing__bars {
+.music-pill__bars {
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  height: 0.85rem;
+  height: 14px;
   flex-shrink: 0;
 }
 
-.now-playing__bars span {
-  width: 2px;
-  background: var(--color-amber);
-  height: 30%;
-  animation: eq-bounce 900ms ease-in-out infinite;
+.music-pill__bars span {
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  animation: bar-bounce 900ms ease-in-out infinite;
 }
 
-.now-playing.is-paused .now-playing__bars span {
+.music-pill__bars span:nth-child(2) { animation-delay: 150ms; }
+.music-pill__bars span:nth-child(3) { animation-delay: 300ms; }
+
+.music-pill.is-paused .music-pill__bars span {
   animation-play-state: paused;
-  height: 15%;
-  opacity: 0.4;
+  height: 3px !important;
 }
 
-.now-playing__bars span:nth-child(2) { animation-delay: 180ms; }
-.now-playing__bars span:nth-child(3) { animation-delay: 340ms; }
-
-@keyframes eq-bounce {
-  0%, 100% { height: 25%; }
-  50% { height: 90%; }
+@keyframes bar-bounce {
+  0%, 100% { height: 4px; }
+  50% { height: 14px; }
 }
 
-/* ==========================================================================
-   MOTION TOGGLE -- ikon aperture, siklus Auto/Penuh/Hemat
-   ========================================================================== */
-
+/* --- Tombol toggle "Efek Visual" ---
+   Kecil & tidak mencolok (pojok kanan atas) -- gaya glass morphism
+   supaya menyatu dengan lapisan atmosfer baru. Tiga keadaan (lihat
+   motionPreference.js): otomatis (ikut sinyal OS) / penuh / hemat. */
 .motion-toggle {
   position: fixed;
-  top: var(--space-2xs);
-  right: var(--space-2xs);
-  z-index: 30;
-  width: 2.4rem;
-  height: 2.4rem;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: 51;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--color-line);
-  background: rgba(29, 23, 18, 0.6);
-  display: grid;
-  place-items: center;
-  color: var(--color-cream-dim);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 150ms var(--ease-press), opacity 200ms var(--ease-out-soft);
+  opacity: 0.75;
   overflow: hidden;
+  isolation: isolate;
 }
 
-.motion-toggle svg {
-  width: 1.1rem;
-  height: 1.1rem;
+.motion-toggle:hover,
+.motion-toggle:focus-visible {
+  opacity: 1;
+  transform: scale(1.06);
 }
 
-.motion-toggle[data-state="full"] {
-  color: var(--color-amber-bright);
-  border-color: var(--color-amber-deep);
+.motion-toggle:active {
+  transform: scale(0.94);
 }
 
-/* ==========================================================================
-   CURSOR GLOW (lihat cursorGlow.js -- desktop hover:hover saja)
-   ========================================================================== */
+.motion-toggle[data-state="reduced"] {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
 
+/* --- Cursor glow (desktop, lihat cursorGlow.js) --- */
 .cursor-glow {
   position: fixed;
   top: 0;
   left: 0;
-  width: 22rem;
-  height: 22rem;
-  margin: -11rem;
+  width: 260px;
+  height: 260px;
+  margin-left: -130px;
+  margin-top: -130px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--glow-amber), transparent 65%);
+  background: radial-gradient(circle, var(--glow-primary), transparent 70%);
   pointer-events: none;
-  z-index: 3;
+  z-index: 40;
   opacity: 0;
-  transition: opacity var(--dur-base);
+  transition: opacity 300ms var(--ease-out-soft);
+  will-change: transform;
 }
 
 .cursor-glow.is-visible {
   opacity: 1;
 }
 
-/* ==========================================================================
-   FRAME FOTO -- pengganti polaroid+washi tape: bingkai film, bukan kado lucu
-   ========================================================================== */
-
-.photo-frame {
-  --tilt: 0deg;
+/* --- Foto kenangan: bingkai gaya polaroid + washi tape ---
+   Struktur: .photo-card (bingkai polaroid, rotasi statis dari
+   --polaroid-rotate) > .washi-tape (dekorasi selotip di sudut) +
+   .photo-card__tilt (lapisan tilt dinamis dari tiltEffect.js /
+   touchTilt.js -- DIPISAH dari .photo-card supaya rotasi statis
+   polaroid & rotasi dinamis tilt tidak saling menimpa, karena
+   keduanya sama-sama pakai `transform`). */
+.photo-card {
+  --polaroid-rotate: 0deg;
+  width: 100%;
+  max-width: 300px;
   position: relative;
-  width: min(78vw, 19rem);
-  margin: 0 auto;
-  padding: 0.6rem;
-  background: var(--color-void-2);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 24px 48px var(--color-shadow);
-  transform: rotate(var(--tilt));
+  background: var(--color-surface, #fff);
+  padding: 14px 14px 38px;
+  border-radius: 6px;
+  transform: rotate(var(--polaroid-rotate));
+  box-shadow:
+    0 2px 3px var(--color-shadow),
+    0 16px 30px -16px var(--color-shadow),
+    0 30px 46px -28px rgba(74, 54, 43, 0.28);
+  /* Gestur sentuh di atas kartu ini SEPENUHNYA dipakai untuk tilt
+     (lihat touchTilt.js), bukan scroll/pan bawaan browser -- tanpa
+     ini, jari yang menggeser foto bisa memicu scroll halaman
+     berbarengan dengan tilt, terasa "berebut" satu sama lain. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.photo-frame__perf {
-  position: absolute;
-  top: 0.6rem;
-  bottom: 0.6rem;
-  width: 0.6rem;
-  background-image: radial-gradient(circle, var(--color-void) 2.2px, transparent 2.3px);
-  background-size: 100% 1.1rem;
-  opacity: 0.9;
+.photo-card__tilt {
+  transform-style: preserve-3d;
+  transition: transform 200ms var(--ease-out-soft);
 }
 
-.photo-frame__perf--left {
-  left: -0.05rem;
-}
-
-.photo-frame__perf--right {
-  right: -0.05rem;
-}
-
-.act.is-active .photo-frame__tilt {
+/* will-change hanya diberikan ke kartu di halaman yang SEDANG aktif --
+   sebelumnya semua kartu foto (termasuk yang ada di halaman kenangan
+   lain yang belum dibuka/tersembunyi) sama-sama dipromosikan jadi
+   compositor layer sendiri terus-menerus, padahal cuma satu yang
+   pernah terlihat & berinteraksi dalam satu waktu. */
+.view.is-active .photo-card__tilt {
   will-change: transform;
 }
 
-.photo-frame__tilt {
-  transition: transform 120ms ease-out;
-}
-
-.photo-frame.is-touch-active .photo-frame__tilt {
+.photo-card.is-touch-active .photo-card__tilt {
   transition: none; /* selama jari digeser, ikuti langsung tanpa jeda transisi */
 }
 
-.photo-frame__window {
-  position: relative;
+.photo-card__frame {
   aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: var(--radius-xs);
-  background: var(--color-void-3);
-  display: grid;
-  place-items: center;
-  color: var(--color-cream-faint);
+  border-radius: 3px;
+  background: var(--color-bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-soft);
   font-size: var(--fs-xs);
   text-align: center;
   padding: var(--space-xs);
+  overflow: hidden;
 }
 
-.photo-frame__window img {
-  position: absolute;
-  inset: 0;
+.photo-card__frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: saturate(1.05) contrast(1.04);
 }
 
-/* Grain + vignette HALUS langsung di atas tiap foto -- konsisten dengan
-   identitas grain global, bukan cuma dekorasi terpisah. */
-.photo-frame__window::after {
+/* Selotip washi -- posisi & rotasi datang dari --tape-rotate/--tape-left
+   (di-set inline per foto lewat seededRandom.js di main.js, supaya
+   konsisten tiap render, bukan berubah-ubah). Garis-garis tipis di
+   dalamnya mensimulasikan tekstur kain selotip washi asli. */
+.washi-tape {
+  --tape-rotate: 0deg;
+  --tape-left: 40%;
+  position: absolute;
+  top: -14px;
+  left: var(--tape-left);
+  width: 64px;
+  height: 26px;
+  transform: translateX(-50%) rotate(var(--tape-rotate));
+  background: repeating-linear-gradient(
+    100deg,
+    rgba(255, 216, 140, 0.75) 0 6px,
+    rgba(255, 200, 168, 0.75) 6px 12px
+  );
+  opacity: 0.85;
+  box-shadow: 0 3px 6px rgba(74, 54, 43, 0.15);
+  z-index: 2;
+}
+
+.washi-tape--right {
+  left: auto;
+  right: calc(var(--tape-left) * -1 + 100%);
+}
+
+/* --- Satu kalimat kenangan: catatan tempel tulisan tangan --- */
+.memory-line {
+  font-size: var(--fs-lg);
+  font-family: var(--font-accent);
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  max-width: 22ch;
+  margin: var(--space-sm) auto 0;
+  padding: var(--space-xs) var(--space-sm) 0.35em;
+  transform: rotate(-1.2deg);
+}
+
+/* --- Surat panjang (scroll internal di dalam satu halaman) ---
+   Halaman ini satu-satunya yang isinya lebih panjang dari satu
+   layar, jadi discroll di DALAM container-nya sendiri (bukan
+   scroll dokumen). Judul tetap terlihat (sticky) sementara isi
+   surat menyala kalimat demi kalimat mengikuti posisi baca. */
+.letter-scroll {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-lg) var(--space-md) calc(var(--space-lg) + 64px);
+}
+
+.letter-heading {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(180deg, var(--color-bg-soft) 75%, transparent);
+  padding: var(--space-md) 0 var(--space-sm);
+  text-align: center;
+  color: var(--color-ink);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 700ms var(--ease-dream), transform 700ms var(--ease-dream);
+}
+
+.letter-heading.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.letter-heading::after {
   content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 100% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
-  pointer-events: none;
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin: var(--space-xs) auto 0;
+  background: linear-gradient(90deg, transparent, var(--color-secondary), transparent);
 }
 
-.memory-label {
-  position: absolute;
-  top: -1.4rem;
-  left: 0.7rem;
-  font-size: var(--fs-2xs);
-  letter-spacing: var(--tracking-label);
-  color: var(--color-amber);
+.letter-body {
+  max-width: 32ch;
+  margin: 0 auto;
+}
+
+.letter-sentence {
+  font-size: var(--fs-base);
+  line-height: 1.8;
+  color: var(--color-text-soft);
+  opacity: 0.4;
+  margin: 0 0 8svh;
+  transition: color var(--dur-base) var(--ease-out-soft),
+              opacity var(--dur-base) var(--ease-out-soft),
+              text-shadow var(--dur-slow) var(--ease-out-soft);
+}
+
+.letter-sentence.is-active {
+  color: var(--color-ink);
+  opacity: 1;
+  /* cahaya hangat lembut di belakang kalimat yang lagi dibaca --
+     seperti disorot cahaya lilin, bukan cuma ganti warna teks */
+  text-shadow: 0 0 30px rgba(var(--aurora-3), 0.4);
+}
+
+.letter-sentence.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: -0.15em;
+  animation: cursor-blink 800ms step-end infinite;
+}
+
+.letter-sentence:last-child {
+  margin-bottom: var(--space-lg);
+}
+
+/* --- Micro-interaction "menyegel surat" pada tombol penutup surat --
+   Cincin cahaya hangat memancar sekali saat tombol "kembali ke awal"
+   ditekan (lihat letterScrub.js), sebelum halaman pindah. */
+.btn.is-sealing {
+  animation: seal-pulse 650ms var(--ease-out-soft);
+}
+
+@keyframes seal-pulse {
+  0% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 0 rgba(255, 200, 92, 0.45); }
+  45% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 16px rgba(255, 200, 92, 0.22); }
+  100% { box-shadow: 0 5px 0 var(--color-primary-dark), var(--shadow-pop), 0 0 0 0 rgba(255, 200, 92, 0); }
+}
+
+/* --- Confirm section (yes/no + reaksi) --- */
+.confirm-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-sm);
+}
+
+/* --- Progress halaman (menunjukkan halaman ke berapa, bukan persen scroll) --- */
+.page-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: var(--color-primary);
+  width: 0%;
+  z-index: 60;
+  transition: width var(--dur-base) var(--ease-out-soft);
 }

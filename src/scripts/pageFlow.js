@@ -1,128 +1,142 @@
-/**
- * Orkestrator navigasi antar-babak. SATU bahasa transisi dipakai di semua
- * perpindahan halaman (letterbox menutup -> tukar konten -> letterbox
- * membuka, dengan light-leak menyapu tepat saat tertutup penuh) --
- * sengaja tidak macam-macam gaya transisi per halaman, supaya terasa
- * seperti satu film yang diarahkan, bukan kumpulan efek lepas-lepas.
- *
- * Kontrak aksesibilitas yang dijaga persis seperti sebelumnya:
- *  - babak nonaktif diberi `inert` + `aria-hidden`, benar-benar tidak bisa
- *    dijangkau keyboard/pembaca layar, bukan cuma disembunyikan visual
- *  - fokus keyboard dipindah ke judul babak baru tiap kali berpindah
- *  - durasi transisi dibaca dari --dur-letterbox, otomatis singkat saat
- *    motion direduksi -- gerak TETAP ada (itu bagaimana pengguna tahu
- *    halaman berpindah), cuma dipersingkat, tidak dihilangkan total
- */
-
-let acts = [];
-let currentIndex = -1;
-let transitioning = false;
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function getLetterboxDuration() {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue("--dur-letterbox").trim();
-  const ms = parseFloat(raw);
-  return Number.isFinite(ms) ? ms : 360;
-}
-
-function setInert(el, inert) {
-  if (inert) {
-    el.setAttribute("inert", "");
-    el.setAttribute("aria-hidden", "true");
-  } else {
-    el.removeAttribute("inert");
-    el.removeAttribute("aria-hidden");
-  }
-}
-
-function updateTimecode(index) {
-  const fill = document.querySelector(".timecode__fill");
-  const label = document.querySelector(".timecode__label");
-  const total = acts.length;
-  const pct = total > 1 ? (index / (total - 1)) * 100 : 0;
-  if (fill) fill.style.width = `${pct}%`;
-  if (label) {
-    label.textContent = `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
-  }
-}
-
-function focusIncoming(act) {
-  const target = act.querySelector("h1, h2") || act;
-  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
-  target.focus({ preventScroll: true });
-  target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
-}
-
-async function transitionTo(index, { instant = false } = {}) {
-  if (transitioning || index < 0 || index >= acts.length || index === currentIndex) return;
-  transitioning = true;
-
-  const outgoing = currentIndex >= 0 ? acts[currentIndex] : null;
-  const incoming = acts[index];
-
-  function swap() {
-    if (outgoing) {
-      outgoing.classList.remove("is-active");
-      setInert(outgoing, true);
-    }
-    incoming.classList.add("is-active");
-    setInert(incoming, false);
-    currentIndex = index;
-    updateTimecode(index);
-  }
-
-  if (instant || !outgoing) {
-    swap();
-    document.dispatchEvent(new CustomEvent("view:settled", { detail: { index, act: incoming } }));
-    transitioning = false;
-    return;
-  }
-
-  const duration = getLetterboxDuration();
-  const bars = document.querySelectorAll(".letterbox__bar");
-  const leak = document.querySelector(".light-leak");
-
-  bars.forEach((bar) => (bar.style.height = "52%"));
-  if (leak) leak.classList.add("is-sweeping");
-
-  await wait(duration);
-  swap();
-  focusIncoming(incoming);
-  if (leak) leak.classList.remove("is-sweeping");
-  bars.forEach((bar) => (bar.style.height = "0%"));
-
-  await wait(duration);
-  document.dispatchEvent(new CustomEvent("view:settled", { detail: { index, act: incoming } }));
-  transitioning = false;
-}
-
-function handleDelegatedClick(e) {
-  const restartBtn = e.target.closest("[data-restart]");
-  if (restartBtn) {
-    document.dispatchEvent(new CustomEvent("experience:restart"));
-    transitionTo(0);
-    return;
-  }
-  const nextBtn = e.target.closest("[data-next]");
-  if (nextBtn) goNext();
-}
-
-/** Maju satu babak -- dipakai oleh hampir semua tombol "lanjut". */
-export function goNext() {
-  transitionTo(currentIndex + 1);
-}
+import { isMotionReduced } from "./motionPreference.js";
 
 /**
- * Dipanggil sekali di awal (main.js), SETELAH babak kenangan dinamis
- * selesai dirender ke DOM -- supaya urutan & jumlah babak sudah final
- * sebelum timecode bar menghitung totalnya.
+ * Navigasi antar-halaman (page-based, bukan scroll dokumen).
+ * Urutan halaman diambil dari urutan .view di DOM secara otomatis --
+ * jadi menambah/menghapus halaman di HTML tidak perlu mengubah file ini.
  */
 export function initPageFlow() {
-  acts = Array.from(document.querySelectorAll("[data-act]"));
-  acts.forEach((act) => setInert(act, true));
-  document.addEventListener("click", handleDelegatedClick);
-  transitionTo(0, { instant: true });
+  const progressBar = document.querySelector("[data-page-progress]");
+
+  function getPages() {
+    return [...document.querySelectorAll(".view")];
+  }
+
+  let currentIndex = Math.max(
+    getPages().findIndex((el) => el.classList.contains("is-active")),
+    0
+  );
+
+  // Halaman yang BUKAN halaman aktif saat ini disembunyikan total dari
+  // assistive technology (bukan cuma disembunyikan secara visual lewat
+  // opacity) -- tanpa ini, screen reader/keyboard user bisa "menemukan"
+  // tombol & teks dari halaman kenangan/surat yang belum saatnya
+  // dibuka, karena secara DOM elemen itu tetap ada & tetap fokusable.
+  // `inert` (didukung luas sejak Chrome 102 & Safari 15.5) mematikan
+  // fokus+interaksi+exposure aksesibilitas sekaligus dalam satu atribut;
+  // `aria-hidden` ditambahkan juga sebagai jaring pengaman untuk
+  // pembaca layar lama.
+  function setInert(el, isInert) {
+    if (isInert) {
+      el.setAttribute("inert", "");
+      el.setAttribute("aria-hidden", "true");
+    } else {
+      el.removeAttribute("inert");
+      el.removeAttribute("aria-hidden");
+    }
+  }
+
+  getPages().forEach((el, i) => setInert(el, i !== currentIndex));
+
+  function updateProgress(total) {
+    if (!progressBar) return;
+    const pct = total > 1 ? (currentIndex / (total - 1)) * 100 : 0;
+    progressBar.style.width = `${pct}%`;
+  }
+
+  // Jalankan callback begitu transisi CSS elemen ini benar-benar
+  // selesai (bukan asumsi berdasarkan waktu tetap) -- dipakai untuk
+  // membersihkan halaman yang keluar, dan memberi tahu halaman yang
+  // masuk kapan dia benar-benar sudah "diam" di posisi akhirnya.
+  function afterTransition(el, callback) {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      callback();
+      el.removeEventListener("transitionend", onEnd);
+    };
+    const onEnd = (e) => {
+      if (e.target === el) finish();
+    };
+    el.addEventListener("transitionend", onEnd);
+    // Fallback kalau transitionend entah bagaimana tidak terpicu.
+    // Nilainya dibaca live (bukan disimpan sekali di awal) supaya
+    // tetap sinkron kalau pengunjung mengganti toggle "Efek Visual"
+    // di tengah sesi -- lihat motionPreference.js. --dur-page under
+    // reduced motion sekarang 260ms (dulu 0ms), jadi buffer-nya juga
+    // ikut disesuaikan, bukan langsung 0.
+    setTimeout(finish, isMotionReduced() ? 400 : 900);
+  }
+
+  function activate(index) {
+    const pages = getPages();
+    if (index < 0 || index >= pages.length) return;
+    if (index === currentIndex && pages[index].classList.contains("is-active")) return;
+
+    const outgoing = pages[currentIndex];
+    const incoming = pages[index];
+
+    if (outgoing && outgoing !== incoming) {
+      outgoing.classList.remove("is-active");
+      outgoing.classList.add("is-leaving");
+      // `inert` dipasang SEKARANG (bukan menunggu transisi keluar
+      // selesai) -- browser otomatis memindahkan fokus keyboard
+      // keluar dari subtree ini kalau ada elemen di dalamnya yang
+      // sedang fokus (mis. tombol yang barusan diklik), jadi tidak
+      // perlu diurus manual di sini.
+      setInert(outgoing, true);
+      afterTransition(outgoing, () => outgoing.classList.remove("is-leaving"));
+    }
+
+    setInert(incoming, false);
+    incoming.classList.add("is-active");
+    currentIndex = index;
+
+    // Reset scroll internal (dipakai halaman surat) tiap kali halaman
+    // itu ditampilkan lagi, supaya selalu mulai dari atas.
+    incoming.querySelector("[data-scroll-container]")?.scrollTo(0, 0);
+
+    // Pindahkan fokus keyboard/pembaca-layar ke halaman baru -- tanpa
+    // ini, fokus cuma "hilang" kembali ke <body> (efek samping inert
+    // di atas) dan pengguna keyboard/NVDA/TalkBack harus meraba dari
+    // awal dokumen lagi tiap kali pindah halaman. tabindex="-1" dicabut
+    // segera setelah blur supaya tidak ikut masuk urutan Tab biasa.
+    incoming.setAttribute("tabindex", "-1");
+    incoming.focus({ preventScroll: true });
+    incoming.addEventListener(
+      "blur",
+      () => incoming.removeAttribute("tabindex"),
+      { once: true }
+    );
+
+    // Beri tahu modul lain (mis. efek sorotan-baca di surat) bahwa
+    // halaman ini sudah benar-benar tampil penuh -- transisi masuk
+    // selesai -- supaya perhitungan posisi/geometri elemen dilakukan
+    // di waktu yang tepat, bukan sekali saja di awal load halaman.
+    afterTransition(incoming, () => {
+      incoming.dispatchEvent(new CustomEvent("view:settled", { bubbles: true }));
+    });
+
+    updateProgress(pages.length);
+  }
+
+  function next() {
+    activate(currentIndex + 1);
+  }
+
+  function goToStart() {
+    activate(0);
+  }
+
+  // Delegasi satu listener untuk semua tombol "lanjut" generik,
+  // supaya tiap halaman baru tidak perlu daftar listener sendiri.
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-next]")) next();
+    if (e.target.closest("[data-go-start]")) goToStart();
+  });
+
+  updateProgress(getPages().length);
+
+  return { next, goToStart, activate };
 }

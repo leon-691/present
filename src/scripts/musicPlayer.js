@@ -1,31 +1,27 @@
-import { content } from "../data/content.js";
-
 /**
  * Widget musik mengambang. Browser modern memblokir autoplay audio
- * sebelum ada interaksi user -- jadi audio baru benar-benar mulai saat
- * gerbang PIN disentuh pertama kali (lihat gate:first-interaction di
- * passwordGate.js).
+ * sebelum ada interaksi user -- jadi audio baru benar-benar mulai
+ * saat tombol "buka" di landing page diklik (lihat main.js).
  */
-export function initMusicPlayer() {
-  const widget = document.querySelector("[data-music-widget]");
-  if (!widget) return;
+export function initMusicPlayer({ src, title, subtitle }) {
+  const pill = document.querySelector("[data-music-pill]");
+  if (!pill) return { unlock: () => {} };
 
-  const audio = widget.querySelector("[data-music-audio]");
-  const toggleBtn = widget.querySelector("[data-music-toggle]");
-
-  audio.src = content.backgroundAudioSrc;
+  const audio = new Audio(src);
   audio.loop = true;
   audio.volume = 0.6;
-  audio.preload = "none";
 
-  widget.querySelector("[data-music-title]").textContent = content.backgroundAudioTitle;
-  widget.querySelector("[data-music-subtitle]").textContent = content.backgroundAudioSubtitle;
+  const toggleBtn = pill.querySelector("[data-music-toggle]");
+  const titleEl = pill.querySelector("[data-music-title]");
+  const subtitleEl = pill.querySelector("[data-music-subtitle]");
+
+  if (titleEl) titleEl.textContent = title;
+  if (subtitleEl) subtitleEl.textContent = subtitle;
 
   function setPlayingState(isPlaying) {
-    widget.classList.toggle("is-paused", !isPlaying);
+    pill.classList.toggle("is-paused", !isPlaying);
     toggleBtn.setAttribute("aria-pressed", String(isPlaying));
-    toggleBtn.setAttribute("aria-label", isPlaying ? "Jeda musik latar" : "Putar musik latar");
-    toggleBtn.textContent = isPlaying ? "❚❚" : "▶";
+    toggleBtn.textContent = isPlaying ? "⏸" : "▶";
   }
 
   toggleBtn.addEventListener("click", async () => {
@@ -34,8 +30,7 @@ export function initMusicPlayer() {
         await audio.play();
         setPlayingState(true);
       } catch (err) {
-        // File belum diisi / diblokir browser -- gagal senyap, tombol
-        // tetap bisa dicoba lagi kapan saja, tidak dikunci permanen.
+        // File belum ada / diblokir browser -- gagal senyap, tidak crash.
         console.warn("Tidak bisa memutar audio:", err);
       }
     } else {
@@ -46,18 +41,16 @@ export function initMusicPlayer() {
 
   setPlayingState(false);
 
-  // Dipanggil sekali dari passwordGate.js tepat saat gesture pertama di
-  // gerbang -- itulah user-gesture yang diizinkan browser untuk autoplay.
-  document.addEventListener(
-    "gate:first-interaction",
-    async () => {
-      try {
-        await audio.play();
-        setPlayingState(true);
-      } catch (err) {
-        console.warn("Autoplay diblokir, tunggu ketukan pada widget musik:", err);
-      }
-    },
-    { once: true }
-  );
+  // Dipanggil dari main.js tepat saat user pertama kali menekan tombol
+  // "buka" di landing page -- itulah user-gesture yang diizinkan browser.
+  async function unlock() {
+    try {
+      await audio.play();
+      setPlayingState(true);
+    } catch (err) {
+      console.warn("Autoplay diblokir, tunggu klik pada pil musik:", err);
+    }
+  }
+
+  return { unlock };
 }

@@ -1,10 +1,12 @@
 import { isMotionReduced } from "./motionPreference.js";
 
 /**
- * Ripple feedback saat tombol/tuts ditekan -- satu listener terdelegasi
- * di document, otomatis berlaku juga untuk tombol yang dibuat belakangan
+ * Ripple feedback saat tombol/tuts ditekan -- satu listener
+ * terdelegasi di document (bukan dipasang per tombol satu-satu),
+ * jadi otomatis berlaku juga untuk tombol yang dibuat belakangan
  * secara dinamis (mis. tombol "lanjut" di tiap halaman kenangan).
- * Dipicu lewat `pointerdown`, sama untuk mouse maupun sentuhan.
+ * Dipicu lewat `pointerdown`, yang sama untuk mouse maupun sentuhan
+ * -- tidak perlu logic terpisah untuk masing-masing.
  */
 export function initRippleEffect() {
   document.addEventListener(
