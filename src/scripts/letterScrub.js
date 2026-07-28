@@ -1,4 +1,5 @@
 import { isMotionReduced } from "./motionPreference.js";
+import { spawnPetalBurst } from "./petalBurst.js";
 
 /**
  * Efek "sorotan baca" untuk surat panjang: kalimat yang paling
@@ -126,9 +127,10 @@ function revealHeadingOnSettle(letterView, heading) {
 
 /**
  * Micro-interaction "menyegel surat" -- cincin cahaya hangat sekali
- * pancar saat tombol "kembali ke awal" ditekan. Murni dekoratif,
- * dijalankan PARALEL dengan listener navigasi pageFlow.js (lewat
- * data-go-start) -- tidak menunda ataupun mengubah kapan halaman
+ * pancar + hembusan kelopak pelan (bukan ledakan penuh spt kado dibuka --
+ * lihat petalBurst.js) saat tombol "kembali ke awal" ditekan. Murni
+ * dekoratif, dijalankan PARALEL dengan listener navigasi pageFlow.js
+ * (lewat data-go-start) -- tidak menunda ataupun mengubah kapan halaman
  * benar-benar berpindah.
  */
 function initClosingSeal() {
@@ -138,5 +140,16 @@ function initClosingSeal() {
     if (isMotionReduced()) return;
     btn.classList.add("is-sealing");
     setTimeout(() => btn.classList.remove("is-sealing"), 700);
+
+    spawnPetalBurst(btn.getBoundingClientRect(), {
+      flowerCount: 6,
+      leafCount: 3,
+      ribbonCount: 4,
+      distanceMin: 60,
+      distanceMax: 170,
+      angleCenter: -Math.PI / 2, // condong ke atas, spt tertiup pelan
+      angleSpread: Math.PI * 0.9,
+      lifetimeMs: 1600,
+    });
   });
 }

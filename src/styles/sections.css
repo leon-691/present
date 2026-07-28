@@ -176,7 +176,7 @@
 /* --- Saat kado diketuk (lihat giftOpening.js) ---
    Tutup terbang ke atas & berputar, kotak sedikit "kempis" lalu pudar,
    kotak berhenti bergoyang. Ledakan kelopak/pita ditangani lewat elemen
-   terpisah (.gift-burst, di-generate JS), bukan di sini. */
+   terpisah (.petal-burst, di-generate JS lewat petalBurst.js), bukan di sini. */
 .gift-box.is-opening {
   animation: none;
 }
@@ -199,45 +199,6 @@
   opacity: 0;
 }
 
-/* --- Ledakan kelopak/daun/pita saat kado terbuka (giftOpening.js) --- */
-.gift-burst {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 90;
-  overflow: hidden;
-}
-
-.gift-burst__piece {
-  position: absolute;
-  opacity: 0;
-  animation-name: gift-burst-fly;
-  animation-timing-function: var(--ease-petal);
-  animation-fill-mode: forwards;
-  will-change: transform, opacity;
-}
-
-.gift-burst__piece--ribbon {
-  border-radius: 3px;
-}
-
-@keyframes gift-burst-fly {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) rotate(0deg) scale(0.4);
-  }
-  10% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--fly-x, 0px), var(--fly-y, 0px)) rotate(var(--fly-spin, 180deg)) scale(var(--fly-scale, 1));
-  }
-}
-
 /* --- Reduced motion: goyangan/ledakan dihilangkan (dekoratif), tapi
    kado tetap bisa diketuk & tetap berpindah halaman (esensial) --
    giftOpening.js sendiri yang melewati animasi panjang saat kondisi ini
@@ -249,7 +210,45 @@ html.motion-reduced .gift-glow {
   animation: none;
 }
 
-/* --- 1. Gerbang (password) -- judulnya h1, halaman kedua --- */
+/* --- 1. Gerbang (password) -- judulnya h1, halaman kedua ---
+   Amplop+segel lilin kecil di atas judul: kado sudah dibuka, sekarang
+   "amplop surat" yang perlu dibuka (kata sandi = segelnya). */
+.envelope {
+  position: relative;
+  width: 128px;
+  height: 44px;
+}
+
+.envelope__flap {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--color-primary-light), var(--color-blush));
+  clip-path: polygon(0 0, 50% 62%, 100% 0, 100% 100%, 0 100%);
+  border-radius: 8px;
+  box-shadow: var(--shadow-pop);
+}
+
+.envelope__seal {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-primary-dark);
+  box-shadow: 0 3px 6px var(--color-shadow), inset 0 -3px 5px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.envelope__seal svg {
+  width: 20px;
+  height: 20px;
+  filter: brightness(1.4) saturate(0.8);
+}
+
 #gerbang h1 {
   font-size: var(--fs-xl);
   max-width: 22ch;
@@ -275,7 +274,46 @@ html.motion-reduced .gift-glow {
   flex-wrap: wrap;
 }
 
-/* --- 4. Reveal (angka umur) --- */
+/* --- 4. Reveal (angka umur) ---
+   Angka digantung sbg gift-tag: loop pita di atas + kartu kecil dgn
+   "lubang" bekas tali, bukan cuma angka besar mengambang polos. */
+.reveal-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reveal-tag__loop {
+  width: 22px;
+  height: 16px;
+  border: 4px solid var(--color-secondary);
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  margin-bottom: -3px;
+  z-index: 1;
+}
+
+.reveal-tag__card {
+  position: relative;
+  background: var(--color-surface);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: 10px 10px 10px 26px;
+  filter: drop-shadow(0 10px 22px var(--color-shadow));
+  transform: rotate(-1.2deg);
+}
+
+.reveal-tag__hole {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--color-bg);
+  box-shadow: inset 0 1px 2px var(--color-shadow), 0 0 0 1.5px var(--color-border);
+}
+
 .reveal-number {
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
@@ -300,19 +338,16 @@ html.motion-reduced .gift-glow {
    belakangnya) supaya terasa jadi pijakan yang kokoh. */
 #pesan-utama .card {
   max-width: 380px;
-  position: relative;
   background: var(--color-surface);
-  box-shadow:
-    0 1px 2px var(--color-shadow),
-    0 20px 40px -20px var(--color-shadow),
-    0 0 0 1px rgba(var(--aurora-3), 0.25);
+  filter:
+    drop-shadow(0 1px 2px var(--color-shadow))
+    drop-shadow(0 20px 36px rgba(74, 53, 39, 0.18));
 }
 
 #pesan-utama .card::before {
   content: "";
   position: absolute;
-  inset: -1.5px;
-  border-radius: inherit;
+  inset: 3px;
   padding: 1.5px;
   background: linear-gradient(135deg, rgba(var(--aurora-2), 0.7), rgba(var(--aurora-3), 0.7), rgba(var(--aurora-4), 0.7));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -331,18 +366,18 @@ html.motion-reduced .gift-glow {
 }
 
 /* --- 8. Lagu ---
-   iframe dibungkus .song-frame (kartu kaca) supaya terasa jadi bagian
-   dari bahasa visual situs yang sama, bukan kotak mengambang sendiri. */
+   iframe dibungkus .song-frame bertekstur kertas + washi tape (bukan
+   kartu kaca) -- glassmorphism disisakan cuma utk UI chrome mengambang
+   (music-pill/motion-toggle), bukan konten halaman. */
 .song-frame {
+  position: relative;
   width: 100%;
   max-width: 340px;
-  padding: var(--space-xs);
-  border-radius: var(--radius-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur-soft));
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
-  box-shadow: var(--shadow-card);
+  padding: var(--space-sm);
+  padding-top: calc(var(--space-sm) + 6px);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  filter: drop-shadow(var(--shadow-card));
 }
 
 #lagu iframe {
@@ -364,6 +399,91 @@ html.motion-reduced .gift-glow {
    di-center seperti halaman lain. Dibungkus nuansa kertas/buku fisik:
    dasar krem hangat + tekstur serat halus + bayangan tepi kiri yang
    mensimulasikan lipatan/ketebalan halaman buku. */
+/* --- 9. Surat -- ending scene ---
+   Dekorasi (glow/bouquet/tepi robek) semua position:absolute relatif ke
+   #surat (yang sendiri position:absolute penuh 1 layar, warisan dari
+   .view) -- artinya tetap diam di tempat walau .letter-scroll di
+   dalamnya discroll. PENTING: goyangan angin (sway) HANYA diberi ke
+   elemen dekoratif ini, TIDAK PERNAH ke .letter-scroll atau isinya --
+   letterScrub.js menghitung ulang posisi baca dari getBoundingClientRect()
+   tiap frame scroll, jadi kalau container-nya sendiri ikut bergoyang,
+   perhitungan itu akan meleset/berkedip. Teks yang sedang dibaca harus
+   tetap diam, hanya bingkainya (kertas tepi & bunga) yang bergerak. */
+.letter-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%, var(--glow-secondary), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 15% 100%, var(--glow-primary), transparent 70%);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.letter-bouquet {
+  position: absolute;
+  width: min(52vw, 230px);
+  height: min(52vw, 230px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.92;
+  filter: drop-shadow(0 6px 10px var(--color-shadow));
+}
+
+.letter-bouquet svg {
+  width: 100%;
+  height: 100%;
+}
+
+.letter-bouquet--bl {
+  left: -6%;
+  bottom: -4%;
+  animation: bouquet-sway 7s ease-in-out infinite;
+}
+
+@keyframes bouquet-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1.6deg); }
+}
+
+.letter-bouquet--tr {
+  right: -6%;
+  top: -4%;
+  /* transform statis dipakai sbg fallback pas reduced-motion (animation:none
+     di bawah) -- tanpa ini simbolnya kembali ke orientasi bl (tidak
+     terpantul) begitu animasinya dimatikan. */
+  transform: scale(-1, -1);
+  animation: bouquet-sway-flipped 8s ease-in-out infinite reverse;
+}
+
+@keyframes bouquet-sway-flipped {
+  0%, 100% { transform: scale(-1, -1) rotate(0deg); }
+  50% { transform: scale(-1, -1) rotate(1.6deg); }
+}
+
+.letter-edge-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  background: var(--color-bg-soft);
+  clip-path: polygon(0.0% 21.65%, 11.1% 22.07%, 22.2% 21.06%, 33.3% 6.5%, 44.4% 15.66%, 55.6% 12.63%, 66.7% 14.54%, 77.8% 7.35%, 88.9% 8.46%, 100.0% 13.0%, 100% 100%, 0% 100%);
+  pointer-events: none;
+  z-index: 3;
+  animation: edge-sway 6s ease-in-out infinite;
+}
+
+@keyframes edge-sway {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+html.motion-reduced .letter-bouquet,
+html.motion-reduced .letter-edge-bottom {
+  animation: none;
+}
+
 .section--letter {
   padding: 0;
   align-items: stretch;

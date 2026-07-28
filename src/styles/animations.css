@@ -227,3 +227,47 @@ html.tier-low .view--blur.is-leaving {
     transform: translateY(115vh) translateX(var(--drift, 40px)) rotate(var(--spin, 180deg));
   }
 }
+
+/* --- Ledakan/hembusan kelopak+daun+pita, titik asal & jumlah partikel
+   ditentukan saat pemanggilan (lihat petalBurst.js) -- dipakai untuk 2
+   momen: kado terbuka (giftOpening.js, meledak ke segala arah) & surat
+   disegel (letterScrub.js, lebih pelan & condong satu arah spt tertiup
+   angin). Satu keyframe generik, arah/jarak/jumlah beda lewat parameter
+   custom property --fly-*, bukan lewat file/keyframe terpisah. */
+.petal-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
+}
+
+.petal-burst__piece {
+  position: absolute;
+  opacity: 0;
+  animation-name: petal-burst-fly;
+  animation-timing-function: var(--ease-petal);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+.petal-burst__piece--ribbon {
+  border-radius: 3px;
+}
+
+@keyframes petal-burst-fly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(0.4);
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--fly-x, 0px), var(--fly-y, 0px)) rotate(var(--fly-spin, 180deg)) scale(var(--fly-scale, 1));
+  }
+}
