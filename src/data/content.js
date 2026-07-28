@@ -19,7 +19,7 @@
 
 export const content = {
   // Nama panggilan adik/teman dekat kamu.
-  friendName: "GANTI INI: nama panggilan adik",
+  friendName: "Indah",
 
   // Nama kamu sendiri, muncul di akhir surat.
   fromName: "GANTI INI: nama kamu",
@@ -28,7 +28,14 @@ export const content = {
   age: 16,
 
   // ------------------------------------------------------------------
-  // 1. GERBANG KATA SANDI -- halaman PALING PERTAMA dibuka.
+  // 0. OPENING -- kado yang menunggu diketuk, halaman PALING PERTAMA.
+  // Label "For {friendName}" dibangun otomatis dari friendName di atas
+  // (lihat main.js) -- tidak perlu diisi terpisah di sini.
+  // ------------------------------------------------------------------
+  openingHint: "ketuk kadonya, yuk",
+
+  // ------------------------------------------------------------------
+  // 1. GERBANG KATA SANDI -- halaman kedua, setelah kado dibuka.
   // Baris ini di video aslinya berbahasa Indonesia campur Inggris,
   // jadi dipertahankan apa adanya -- hanya kata "love" (panggilan
   // sayang) yang dihapus.

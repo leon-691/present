@@ -6,7 +6,7 @@ import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
 import { initTiltEffect } from "./tiltEffect.js";
 import { initTouchTilt } from "./touchTilt.js";
-import { initFlowerIntro } from "./flowerIntro.js";
+import { initGiftOpening } from "./giftOpening.js";
 import { burstConfetti } from "./confetti.js";
 import { initMotionPreference, initMotionToggle, isMotionReduced } from "./motionPreference.js";
 import { detectDeviceTier } from "./deviceTier.js";
@@ -29,6 +29,12 @@ function populateStaticText() {
   });
 
   document.title = `Untuk ${content.friendName}`;
+
+  // Label kado "For {friendName}" -- sengaja dibangun dari friendName di
+  // sini (bukan field content.js terpisah), supaya nama tetap satu sumber
+  // kebenaran: ganti friendName sekali, ikut berubah di semua tempat.
+  const openingLabelEl = document.querySelector("[data-opening-label]");
+  if (openingLabelEl) openingLabelEl.textContent = `For ${content.friendName}`;
 }
 
 /**
@@ -92,8 +98,18 @@ function setupGate(music, pageFlow) {
   initPasswordGate({
     password: content.password,
     wrongMessage: content.gateWrongMessage,
+    // Musik sudah mungkin ter-unlock lebih awal lewat ketukan kado (lihat
+    // setupGiftOpening) -- unlock() aman dipanggil berulang, cuma no-op
+    // kalau audio sudah jalan.
     onFirstInput: () => music.unlock(),
     onSuccess: () => pageFlow.next(),
+  });
+}
+
+function setupGiftOpening(music, pageFlow) {
+  initGiftOpening({
+    onFirstInteraction: () => music.unlock(),
+    onComplete: () => pageFlow.next(),
   });
 }
 
@@ -136,6 +152,7 @@ function init() {
   // fitur error (mis. salah format di content.js), fitur lain di
   // halaman ini tetap jalan normal, bukan mati total tanpa pesan.
   let pageFlow;
+  let music;
 
   const steps = [
     // Harus jadi step PERTAMA: semua modul di bawah (flowerIntro,
@@ -158,19 +175,28 @@ function init() {
     ["navigasi halaman", () => {
       pageFlow = initPageFlow();
     }],
-    ["musik & gerbang", () => {
-      const music = initMusicPlayer({
+    ["musik", () => {
+      music = initMusicPlayer({
         src: content.backgroundAudioSrc,
         title: content.backgroundAudioTitle,
         subtitle: content.backgroundAudioSubtitle,
       });
-      setupGate(music, pageFlow);
     }],
+    // Kado adalah halaman PERTAMA yang dilihat pengguna -- ketukannya
+    // jadi gesture pertama yang sah untuk unlock musik (lebih awal dari
+    // gerbang password), lihat setupGiftOpening di atas.
+    ["kado pembuka", () => setupGiftOpening(music, pageFlow)],
+    ["gerbang", () => setupGate(music, pageFlow)],
     ["konfirmasi", () => setupConfirm(pageFlow)],
     ["efek surat", initLetterScrub],
     ["efek tilt foto (mouse)", initTiltEffect],
     ["efek tilt foto (sentuh)", initTouchTilt],
-    ["animasi bunga pembuka", initFlowerIntro],
+    // Catatan desain: flowerIntro (kelopak jatuh otomatis saat load) TIDAK
+    // lagi dipanggil di sini secara otomatis -- perannya sebagai "momen wow
+    // pertama" sekarang diambil alih ledakan kado (giftOpening.js), yang
+    // baru terpicu SETELAH Indah mengetuk kado, bukan sebelum dia sempat
+    // berinteraksi apa pun. Modul & fungsinya tetap ada di file terpisah,
+    // tinggal dipanggil lagi kalau suatu saat mau dipakai di titik lain.
     ["atmosfer ambient", initAmbientBackground],
     ["cursor glow & magnetic button", initCursorGlow],
     ["ripple feedback tombol/tuts", initRippleEffect],

@@ -38,7 +38,7 @@ body {
    selector universal `*` + !important seperti sebelumnya, karena itu
    ikut membungkam transisi esensial (pergantian halaman) sampai
    terasa seperti macet, bukan cuma "lebih tenang". Elemen dekoratif
-   spesifik (mascot float, bar musik, bunga intro, dst) masing-masing
+   spesifik (ornamen float, bar musik, bunga intro, dst) masing-masing
    sudah punya override reduced-motion sendiri di animations.css /
    components.css, jadi cukup ditarget di sana. Di sini cukup jaga
    hal-hal umum: smooth-scroll & animasi ambient yang benar-benar

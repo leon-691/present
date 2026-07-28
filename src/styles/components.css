@@ -137,8 +137,10 @@
   margin-bottom: 0.2em;
 }
 
-/* --- Mascot blob (signature character, pure CSS/SVG, no external art needed) --- */
-.mascot {
+/* --- Ornamen bunga/daun kecil (pure SVG, tanpa aset gambar tambahan) ---
+   Menggantikan maskot karakter -- identitas visual sekarang sepenuhnya
+   dibangun dari bunga/daun/pita, bukan karakter beranimasi. */
+.ornament {
   width: 120px;
   height: auto;
 }

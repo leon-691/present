@@ -5,11 +5,17 @@ bukan satu halaman scroll panjang) -- mengikuti gaya video referensi,
 termasuk bahasanya (dominan Inggris, Indonesia hanya di beberapa titik
 yang di video memang berbahasa Indonesia).
 
-Urutannya: gerbang kata sandi → sapaan → konfirmasi (+ reaksi lucu
-kalau pilih "noo") → reveal umur → pesan utama → transisi → halaman
-kenangan (satu foto + satu kalimat per halaman) → lagu kenangan →
-surat panjang (scroll internal, tombol "Kembali ke Awal" balik ke
-halaman pertama).
+Urutannya: **kado pembuka** (kotak kado yang diketuk) → gerbang kata
+sandi → sapaan → konfirmasi (+ reaksi lucu kalau pilih "noo") → reveal
+umur → pesan utama → transisi → halaman kenangan (satu foto + satu
+kalimat per halaman) → lagu kenangan → surat panjang (scroll internal,
+tombol "Kembali ke Awal" balik ke **kado pembuka**, bukan ke gerbang --
+karena kado sekarang halaman paling pertama).
+
+Identitas visualnya: kertas, bunga kering (pressed flower), pita, dan
+tulisan tangan -- tidak ada karakter/maskot. Semua ilustrasi bunga/daun
+adalah SVG inline (lihat sprite di awal `index.html`), jadi tidak
+butuh file gambar tambahan untuk dekorasinya.
 
 ## 1. Yang wajib kamu isi sebelum di-deploy
 
@@ -59,11 +65,17 @@ src/
   styles/                design tokens & komponen CSS, terpisah per keperluan
   scripts/                logic interaktif, satu modul per fitur
     pageFlow.js             navigasi antar-halaman (page-based)
+    giftOpening.js          scene kado di halaman paling pertama
     passwordGate.js        gerbang PIN
     confirmStep.js           konfirmasi yes/no + reaksi
     letterScrub.js             efek sorotan baca di surat panjang
     musicPlayer.js               widget musik mengambang
     confetti.js                    efek konfeti
+    flowerIntro.js                 kelopak jatuh -- TIDAK dipanggil otomatis
+                                    saat ini (perannya diambil alih ledakan
+                                    kado), file & fungsinya tetap ada kalau
+                                    suatu saat mau dipakai lagi di titik lain,
+                                    lihat catatan di main.js -> init()
     motionPreference.js            satu sumber kebenaran preferensi motion
                                     (gabung sinyal OS + toggle manual "Efek
                                     Visual") -- modul lain baca isReduced()
@@ -83,6 +95,12 @@ assets/
 
 Semua warna & font ada di `src/styles/variables.css`, di bagian atas
 sendiri. Ubah nilai hex-nya, otomatis berlaku ke seluruh halaman.
+
+Font-nya 3 peran (jangan campur lebih dari ini, biar tetap tenang):
+`--font-display` (Shantell Sans -- headline/struktur), `--font-accent`
+(Caveat -- aksen tulisan tangan, dipakai sedikit tapi menonjol),
+`--font-body` (Plus Jakarta Sans -- badan teks panjang spt pesan &
+surat, dijaga tetap sangat mudah dibaca).
 
 ## 6. Dependency dari CDN
 
@@ -119,8 +137,8 @@ manual di HTML (bukan lewat `content.js`), pastikan classnya tetap
 `index.html` sudah diberi `robots: noindex` (situs ini kado pribadi,
 sengaja tidak boleh terindeks mesin pencari), Open Graph tags (biar
 preview link rapi saat dibagikan lewat chat, tanpa membocorkan isi),
-`theme-color`, `color-scheme: light`, dan favicon SVG inline dari
-bentuk maskot. Kalau mau ganti judul/deskripsi yang dipakai utk
+`theme-color`, `color-scheme: light`, dan favicon SVG inline berbentuk
+bunga kecil. Kalau mau ganti judul/deskripsi yang dipakai utk
 preview link, edit langsung di `<head>` -- ini SATU-SATUNYA teks yang
 sengaja tidak diambil dari `content.js`, karena harus tetap netral
 (tidak boleh membocorkan isi kejutan) walau isi surat/pesan diubah.

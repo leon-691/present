@@ -7,7 +7,7 @@
   50% { transform: translateY(-10px); }
 }
 
-.mascot--wave {
+.ornament--float {
   animation: float-y 2.4s ease-in-out infinite;
 }
 
@@ -163,6 +163,12 @@ html.tier-low .view--blur.is-leaving {
   opacity: 0;
   border-radius: 48% 52% 44% 56% / 52% 48% 44% 56%;
   transform: scale(1.05) rotate(1.5deg);
+}
+
+/* --- Zoom kamera singkat saat kado dibuka (lihat giftOpening.js) --- */
+.page.is-gift-zoom {
+  transition: transform 1100ms var(--ease-petal);
+  transform: scale(1.045);
 }
 
 /* --- Ripple feedback (lihat rippleEffect.js) ---

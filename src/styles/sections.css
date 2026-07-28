@@ -8,7 +8,248 @@
   color: var(--color-text-soft);
 }
 
-/* --- 1. Gerbang (password) -- judulnya h1, halaman pertama --- */
+/* --- 0. Opening (kado) ---
+   Kotak kado dibangun murni dari <span> + gradient/shadow (bukan gambar),
+   supaya konsisten dgn pendekatan "tanpa aset eksternal" yang sudah dipakai
+   di seluruh situs (ornamen bunga, keypad, dst). Struktur: .gift-box (tombol,
+   aksesibel) > __shadow (bayangan lonjong di lantai) + __body (kotak bawah,
+   diam) + __lid (tutup, yang terbang saat dibuka). Pita disusun sebagai dua
+   garis (silang) + simpul pita dari 2 "loop" oval + 1 knot bundar. */
+.view--gift {
+  gap: var(--space-sm);
+}
+
+.gift-glow {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  width: min(70vw, 420px);
+  height: min(70vw, 420px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-secondary), transparent 70%);
+  filter: blur(20px);
+  opacity: 0.8;
+  animation: gift-glow-pulse 3.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gift-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.94); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+.gift-box {
+  position: relative;
+  z-index: 1;
+  width: 168px;
+  height: 168px;
+  border: none;
+  background: none;
+  padding: 0;
+  display: block;
+  isolation: isolate;
+  animation: gift-wobble var(--dur-gift-wobble) var(--ease-out-soft) infinite;
+  transform-origin: 50% 85%;
+}
+
+.gift-box:focus-visible {
+  outline-offset: 8px;
+}
+
+@keyframes gift-wobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(-3.5deg) scale(1.015); }
+  75% { transform: rotate(2.5deg) scale(1.01); }
+}
+
+.gift-box__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 78%;
+  height: 20px;
+  transform: translateX(-50%);
+  background: var(--color-shadow);
+  border-radius: 50%;
+  filter: blur(6px);
+  z-index: 0;
+}
+
+.gift-box__body {
+  position: absolute;
+  inset: 46% 8% 0 8%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(155deg, var(--color-primary-light), var(--color-primary));
+  box-shadow: 0 14px 24px -10px var(--color-shadow), inset 0 -6px 10px rgba(74, 53, 39, 0.14);
+  transition: transform var(--dur-slow) var(--ease-petal), opacity var(--dur-slow) var(--ease-petal);
+}
+
+.gift-box__lid {
+  position: absolute;
+  inset: 34% 4% auto 4%;
+  height: 26%;
+  border-radius: var(--radius-sm) var(--radius-sm) 6px 6px;
+  background: linear-gradient(155deg, var(--color-blush), var(--color-primary-light));
+  box-shadow: 0 8px 16px -6px var(--color-shadow);
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-gift-open) var(--ease-petal), opacity var(--dur-gift-open) var(--ease-petal);
+}
+
+.gift-box__ribbon-v {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 15%;
+  transform: translateX(-50%);
+  background: var(--color-secondary);
+  box-shadow: inset 0 0 0 1px rgba(74, 53, 39, 0.08);
+}
+
+.gift-box__ribbon-h {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  right: 0;
+  height: 15%;
+  background: var(--color-secondary);
+  box-shadow: inset 0 0 0 1px rgba(74, 53, 39, 0.08);
+}
+
+.gift-box__bow {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 64px;
+  height: 34px;
+  transform: translateX(-50%);
+}
+
+.gift-box__bow-loop {
+  position: absolute;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  background: var(--color-secondary);
+  border-radius: 60% 60% 60% 5%;
+  box-shadow: 0 3px 6px var(--color-shadow);
+}
+
+.gift-box__bow-loop--left {
+  left: 2px;
+  transform: rotate(-25deg);
+}
+
+.gift-box__bow-loop--right {
+  right: 2px;
+  border-radius: 60% 60% 5% 60%;
+  transform: rotate(25deg);
+}
+
+.gift-box__bow-knot {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+  transform: translateX(-50%);
+  background: var(--color-secondary);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+.gift-label {
+  font-family: var(--font-accent);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-top: var(--space-md);
+}
+
+.gift-hint {
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+}
+
+/* --- Saat kado diketuk (lihat giftOpening.js) ---
+   Tutup terbang ke atas & berputar, kotak sedikit "kempis" lalu pudar,
+   kotak berhenti bergoyang. Ledakan kelopak/pita ditangani lewat elemen
+   terpisah (.gift-burst, di-generate JS), bukan di sini. */
+.gift-box.is-opening {
+  animation: none;
+}
+
+.gift-box.is-opening .gift-box__lid {
+  transform: translateY(-130px) rotate(-50deg) scale(0.8);
+  opacity: 0;
+}
+
+.gift-box.is-opening .gift-box__body {
+  transform: scaleY(0.82) scaleX(1.05);
+  opacity: 0;
+  transition-delay: 80ms;
+}
+
+.view--gift.is-leaving .gift-glow,
+.view--gift.is-leaving .gift-label,
+.view--gift.is-leaving .gift-hint {
+  transition: opacity var(--dur-fast) var(--ease-out-soft);
+  opacity: 0;
+}
+
+/* --- Ledakan kelopak/daun/pita saat kado terbuka (giftOpening.js) --- */
+.gift-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
+}
+
+.gift-burst__piece {
+  position: absolute;
+  opacity: 0;
+  animation-name: gift-burst-fly;
+  animation-timing-function: var(--ease-petal);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+.gift-burst__piece--ribbon {
+  border-radius: 3px;
+}
+
+@keyframes gift-burst-fly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(0.4);
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--fly-x, 0px), var(--fly-y, 0px)) rotate(var(--fly-spin, 180deg)) scale(var(--fly-scale, 1));
+  }
+}
+
+/* --- Reduced motion: goyangan/ledakan dihilangkan (dekoratif), tapi
+   kado tetap bisa diketuk & tetap berpindah halaman (esensial) --
+   giftOpening.js sendiri yang melewati animasi panjang saat kondisi ini
+   aktif, ini cuma jaring pengaman visual. --- */
+html.motion-reduced .gift-box {
+  animation: none;
+}
+html.motion-reduced .gift-glow {
+  animation: none;
+}
+
+/* --- 1. Gerbang (password) -- judulnya h1, halaman kedua --- */
 #gerbang h1 {
   font-size: var(--fs-xl);
   max-width: 22ch;
