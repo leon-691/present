@@ -12,10 +12,13 @@ kalimat per halaman) → lagu kenangan → surat panjang (scroll internal,
 tombol "Kembali ke Awal" balik ke **kado pembuka**, bukan ke gerbang --
 karena kado sekarang halaman paling pertama).
 
-Identitas visualnya: kertas, bunga kering (pressed flower), pita, dan
-tulisan tangan -- tidak ada karakter/maskot. Semua ilustrasi bunga/daun
-adalah SVG inline (lihat sprite di awal `index.html`), jadi tidak
-butuh file gambar tambahan untuk dekorasinya.
+Identitas visualnya: kertas, sticker lucu (aset asli di `assets/stickers/`),
+dan tulisan tangan -- tidak ada karakter/maskot buatan sendiri. Bunga
+SENGAJA dibatasi jadi aksen di 3 titik saja: opening (ledakan kado),
+transisi (2 foto bunga asli, dibulatkan jadi medali kecil), dan ending
+di halaman surat (bouquet SVG di 2 sudut layar) -- bukan dekorasi utama
+di semua halaman. Ilustrasi bunga/daun (SVG) ada di sprite awal
+`index.html`; foto bunga & sticker asli ada di `assets/`.
 
 ## 1. Yang wajib kamu isi sebelum di-deploy
 
@@ -23,15 +26,15 @@ Semua teks ada di **satu file**: `src/data/content.js`. Cari semua
 baris bertanda `GANTI INI` dan isi dengan kata-katamu sendiri —
 tidak perlu sentuh file lain.
 
-Checklist:
-- [ ] `friendName`, `fromName`
-- [ ] `password`
-- [ ] `mainMessageBody`, `letterBody` (boleh tambah/kurang jumlah kalimat)
-- [ ] `memories` — taruh 5 foto di `assets/images/` dengan nama `foto-1.jpg` s/d `foto-5.jpg`
-      (atau ubah nama filenya di `content.js`; boleh tambah/kurangi jumlah item,
-      halaman otomatis menyesuaikan)
-- [ ] `spotifyEmbedSrc` — lihat cara ambilnya di komentar dalam `content.js`
-- [ ] `backgroundAudioSrc` — taruh file mp3 di `assets/audio/lagu-latar.mp3`
+Status saat ini:
+- [x] `friendName`, `fromName`, `password` — sudah terisi
+- [x] `mainMessageBody`, `letterBody` — sudah terisi
+- [x] `memories` — 5 foto sudah ada di `assets/images/foto-1.jpg` s/d `foto-5.jpg`
+- [x] `backgroundAudioSrc` — sudah ada di `assets/audio/lagu-latar.mp3`
+      (judul lagu asli tidak diketahui dari metadata file, jadi
+      `backgroundAudioTitle` ikut apa yang kamu isi manual)
+- [ ] `spotifyEmbedSrc` — **masih placeholder**, lihat cara ambilnya di
+      komentar dalam `content.js`
 
 Kalau foto atau audio belum ditaruh, situsnya tidak akan error — foto
 akan menampilkan teks placeholder, dan tombol musik akan diam saja
@@ -66,6 +69,9 @@ src/
   scripts/                logic interaktif, satu modul per fitur
     pageFlow.js             navigasi antar-halaman (page-based)
     giftOpening.js          scene kado di halaman paling pertama
+    petalBurst.js            ledakan/hembusan kelopak -- dipakai bareng oleh
+                              giftOpening.js (kado dibuka) & letterScrub.js
+                              (surat disegel)
     passwordGate.js        gerbang PIN
     confirmStep.js           konfirmasi yes/no + reaksi
     letterScrub.js             efek sorotan baca di surat panjang
@@ -87,8 +93,12 @@ src/
     touchTilt.js                    padanan tilt utk layar sentuh + gyro ambient
   data/content.js         SEMUA teks & konfigurasi -- edit di sini saja
 assets/
-  images/                 taruh foto di sini
-  audio/                  taruh file musik latar di sini
+  images/                 foto kenangan (foto-1..5.jpg) + 2 foto bunga aksen
+                          (accent-bunga-1/2.jpg, dipakai di halaman transisi)
+  audio/                  musik latar (lagu-latar.mp3)
+  stickers/               5 sticker asli (webp) -- identitas visual UTAMA
+                          sekarang; lihat catatan bunga-vs-sticker di
+                          bagian atas README ini
 ```
 
 ## 5. Kalau mau ubah warna

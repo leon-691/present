@@ -20,6 +20,7 @@ const RIBBON_COLORS = ["var(--color-secondary)", "var(--color-primary)"];
  * @param {number} [opts.distanceMax=360] - jarak maksimum partikel terbang (px)
  * @param {number} [opts.angleSpread=Math.PI*2] - rentang sudut terbang (radian) -- 2π = segala arah
  * @param {number} [opts.angleCenter=0] - pusat rentang sudut (radian, 0 = kanan, -PI/2 = atas)
+ * @param {number} [opts.sizeScale=1] - pengali ukuran tiap partikel (>1 utk ledakan yg perlu "menutupi layar")
  * @param {number} [opts.lifetimeMs=1900] - berapa lama container dibersihkan dari DOM
  */
 export function spawnPetalBurst(originRect, opts = {}) {
@@ -31,6 +32,7 @@ export function spawnPetalBurst(originRect, opts = {}) {
     distanceMax = 360,
     angleSpread = Math.PI * 2,
     angleCenter = 0,
+    sizeScale = 1,
     lifetimeMs = 1900,
   } = opts;
 
@@ -72,7 +74,7 @@ export function spawnPetalBurst(originRect, opts = {}) {
     const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
     use.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#petal-flower");
     svg.appendChild(use);
-    place(svg, 16 + Math.random() * 18);
+    place(svg, (16 + Math.random() * 18) * sizeScale);
     container.appendChild(svg);
   }
 
@@ -83,7 +85,7 @@ export function spawnPetalBurst(originRect, opts = {}) {
     const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
     use.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#leaf-single");
     svg.appendChild(use);
-    place(svg, 14 + Math.random() * 14);
+    place(svg, (14 + Math.random() * 14) * sizeScale);
     container.appendChild(svg);
   }
 
@@ -91,7 +93,7 @@ export function spawnPetalBurst(originRect, opts = {}) {
     const span = document.createElement("span");
     span.className = "petal-burst__piece petal-burst__piece--ribbon";
     span.style.background = RIBBON_COLORS[i % RIBBON_COLORS.length];
-    const size = 6 + Math.random() * 4;
+    const size = (6 + Math.random() * 4) * sizeScale;
     place(span, size);
     span.style.height = `${size * 4.5}px`; // strip pita: lebih panjang dari lebar
     container.appendChild(span);

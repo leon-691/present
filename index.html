@@ -79,44 +79,6 @@
       <path d="M15 36 L15 6" stroke="var(--color-sage-dark)" stroke-width="1" stroke-opacity="0.5" stroke-linecap="round" />
     </symbol>
 
-    <!-- Sprig kecil (pengganti maskot) -- dipakai statis di halaman
-         gerbang/sapaan/konfirmasi sebagai ornamen "ceria", bukan karakter. -->
-    <symbol id="flower-sprig" viewBox="0 0 120 130">
-      <ellipse cx="60" cy="122" rx="30" ry="5" fill="var(--color-shadow)" />
-      <path d="M60 118 C58 90 52 66 46 46" stroke="var(--color-sage-dark)" stroke-width="3" fill="none" stroke-linecap="round" />
-      <path d="M60 118 C62 92 66 70 72 50" stroke="var(--color-sage-dark)" stroke-width="3" fill="none" stroke-linecap="round" />
-      <path d="M60 118 C60 96 60 78 60 58" stroke="var(--color-sage-dark)" stroke-width="3" fill="none" stroke-linecap="round" />
-      <use href="#leaf-single" x="30" y="78" width="20" height="27" transform="rotate(-28 40 90)" />
-      <use href="#leaf-single" x="72" y="82" width="18" height="24" transform="rotate(24 82 94)" />
-      <g style="--petal-color: var(--color-primary-light)">
-        <use href="#petal-flower" x="38" y="30" width="26" height="26" />
-      </g>
-      <g style="--petal-color: var(--color-blush)">
-        <use href="#petal-flower" x="60" y="14" width="32" height="32" />
-      </g>
-      <g style="--petal-color: var(--color-primary-light)">
-        <use href="#petal-flower" x="68" y="42" width="22" height="22" />
-      </g>
-      <path d="M46 108 C52 100 68 100 74 108 C68 112 52 112 46 108 Z" fill="var(--color-primary)" />
-      <path d="M60 108 L54 120 M60 108 L66 120" stroke="var(--color-primary-dark)" stroke-width="2.5" fill="none" stroke-linecap="round" />
-    </symbol>
-
-    <!-- Sprig layu -- pengganti reaksi "annoyed", dipakai saat Indah pilih
-         "belum siap". Batang menekuk & satu kelopak lepas jatuh, tanpa
-         wajah/karakter apa pun. -->
-    <symbol id="flower-wilted" viewBox="0 0 120 130">
-      <ellipse cx="60" cy="122" rx="30" ry="5" fill="var(--color-shadow)" />
-      <path d="M60 118 C58 96 66 80 52 58 C46 49 50 40 58 36" stroke="var(--color-sage-dark)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85" />
-      <use href="#leaf-single" x="66" y="86" width="18" height="24" transform="rotate(48 76 98)" opacity="0.85" />
-      <g style="--petal-color: var(--color-blush)" opacity="0.8" transform="rotate(18 55 34)">
-        <use href="#petal-flower" x="42" y="20" width="26" height="26" />
-      </g>
-      <g style="--petal-color: var(--color-primary-light)" opacity="0.55">
-        <use href="#petal-flower" x="78" y="66" width="16" height="16" />
-      </g>
-      <path d="M46 106 C52 100 66 100 72 106 C66 111 52 111 46 106 Z" fill="var(--color-primary)" opacity="0.8" />
-    </symbol>
-
     <!-- Rangkaian bunga di sudut -- dipakai di halaman surat (ending),
          mengelilingi surat spt buket sungguhan diletakkan di meja.
          Sengaja dikumpulkan di pojok kiri-bawah viewBox; utk pojok lain
@@ -215,12 +177,7 @@
 
       <!-- 1. GERBANG KATA SANDI -->
       <section class="view" id="gerbang">
-        <div class="envelope motion-decorative pop-in" aria-hidden="true">
-          <div class="envelope__flap"></div>
-          <div class="envelope__seal">
-            <svg viewBox="0 0 40 40" style="--petal-color: var(--color-blush)"><use href="#petal-flower" /></svg>
-          </div>
-        </div>
+        <img class="sticker sticker--float motion-decorative pop-in" src="assets/stickers/sticker-password.webp" alt="" aria-hidden="true" width="512" height="512" />
         <h1 class="fade-up fade-up--delay-1" data-key="gateSubtitle">coba tebak kodenya</h1>
         <div class="keypad-dots fade-up fade-up--delay-2" data-gate-dots></div>
         <div class="keypad fade-up fade-up--delay-2" data-gate-keypad>
@@ -242,7 +199,7 @@
 
       <!-- 2. SAPAAN -->
       <section class="view view--sweep" id="sapaan">
-        <svg class="ornament ornament--float motion-decorative" aria-hidden="true"><use href="#flower-sprig" /></svg>
+        <img class="sticker sticker--float motion-decorative" src="assets/stickers/sticker-hi.webp" alt="" aria-hidden="true" width="512" height="512" />
         <h1 data-key="greetingText">hai!</h1>
         <button class="btn" data-next data-key="greetingButton">lanjut</button>
       </section>
@@ -250,7 +207,7 @@
       <!-- 3. KONFIRMASI (yes/no + reaksi lucu kalau pilih "noo") -->
       <section class="view view--mask" id="konfirmasi">
         <div data-confirm-question>
-          <svg class="ornament ornament--float motion-decorative" aria-hidden="true"><use href="#flower-sprig" /></svg>
+          <img class="sticker sticker--float motion-decorative" src="assets/stickers/sticker-ready.webp" alt="" aria-hidden="true" width="512" height="512" />
           <h2 data-key="confirmQuestion">udah siap buka kejutannya?</h2>
           <div class="confirm-actions">
             <button class="btn" data-confirm-yes data-key="confirmYes">udah siap</button>
@@ -258,7 +215,7 @@
           </div>
         </div>
         <div data-confirm-reaction hidden>
-          <svg class="ornament is-shaking" aria-hidden="true"><use href="#flower-wilted" /></svg>
+          <img class="sticker is-shaking" src="assets/stickers/sticker-no.webp" alt="" aria-hidden="true" width="512" height="512" />
           <h2 data-key="confirmReactionText">yaah, padahal udah aku siapin</h2>
           <button class="btn btn--ghost" data-confirm-back data-key="confirmReactionButton">oke, siap sekarang</button>
         </div>
@@ -287,8 +244,15 @@
         <button class="btn" data-next data-key="mainMessageButton">i have something for you</button>
       </section>
 
-      <!-- 6. TRANSISI -->
+      <!-- 6. TRANSISI -- salah satu dari 3 titik bunga BOLEH tampil sbg
+           aksen (opening/transisi/ending), lihat catatan di sections.css.
+           Foto bunga asli (bukan ilustrasi SVG), diproses jadi medali
+           bulat kecil supaya tetap senada palet, bukan foto mentah. -->
       <section class="view view--sweep" id="transisi">
+        <div class="transition-flowers motion-decorative" aria-hidden="true">
+          <img src="assets/images/accent-bunga-1.jpg" alt="" width="320" height="320" />
+          <img src="assets/images/accent-bunga-2.jpg" alt="" width="320" height="320" />
+        </div>
         <p class="transition-text" data-key="transitionText">okayy last one...</p>
         <button class="btn" data-next data-key="continueLabel">klik ini &lt;3</button>
       </section>
@@ -331,7 +295,10 @@
         </div>
         <div class="letter-edge-bottom motion-decorative" aria-hidden="true"></div>
         <div class="letter-scroll" data-scroll-container>
-          <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
+          <h2 class="letter-heading">
+            <span data-key="letterHeading">selamat ulang tahun ya</span>
+            <img class="sticker sticker--pin" src="assets/stickers/sticker-read-slowly.webp" alt="" aria-hidden="true" width="512" height="512" />
+          </h2>
           <div class="letter-body" data-letter-body></div>
           <button class="btn" data-go-start data-key="closingButton">kembali ke awal</button>
         </div>

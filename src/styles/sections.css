@@ -210,45 +210,7 @@ html.motion-reduced .gift-glow {
   animation: none;
 }
 
-/* --- 1. Gerbang (password) -- judulnya h1, halaman kedua ---
-   Amplop+segel lilin kecil di atas judul: kado sudah dibuka, sekarang
-   "amplop surat" yang perlu dibuka (kata sandi = segelnya). */
-.envelope {
-  position: relative;
-  width: 128px;
-  height: 44px;
-}
-
-.envelope__flap {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, var(--color-primary-light), var(--color-blush));
-  clip-path: polygon(0 0, 50% 62%, 100% 0, 100% 100%, 0 100%);
-  border-radius: 8px;
-  box-shadow: var(--shadow-pop);
-}
-
-.envelope__seal {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 34px;
-  height: 34px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: var(--color-primary-dark);
-  box-shadow: 0 3px 6px var(--color-shadow), inset 0 -3px 5px rgba(0, 0, 0, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.envelope__seal svg {
-  width: 20px;
-  height: 20px;
-  filter: brightness(1.4) saturate(0.8);
-}
-
+/* --- 1. Gerbang (password) -- judulnya h1, halaman kedua --- */
 #gerbang h1 {
   font-size: var(--fs-xl);
   max-width: 22ch;
@@ -357,12 +319,38 @@ html.motion-reduced .gift-glow {
   pointer-events: none;
 }
 
-/* --- 6. Transisi --- */
+/* --- 6. Transisi ---
+   Salah satu dari 3 titik bunga BOLEH tampil sbg aksen (opening/
+   transisi/ending). Foto bunga asli (bukan SVG), dibulatkan spt
+   medali pressed-flower supaya tetap senada, bukan foto mentah
+   bebas ukuran. */
 .transition-text {
   font-family: var(--font-accent);
   font-size: var(--fs-xl);
   color: var(--color-primary);
   max-width: 18ch;
+}
+
+.transition-flowers {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+}
+
+.transition-flowers img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 4px var(--color-surface), 0 0 0 5px var(--color-border), var(--shadow-pop);
+}
+
+.transition-flowers img:first-child {
+  transform: rotate(-6deg) translateY(6px);
+}
+
+.transition-flowers img:last-child {
+  transform: rotate(5deg);
 }
 
 /* --- 8. Lagu ---

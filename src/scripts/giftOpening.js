@@ -1,5 +1,6 @@
 import { isMotionReduced } from "./motionPreference.js";
 import { spawnPetalBurst } from "./petalBurst.js";
+import { particleBudget } from "./deviceTier.js";
 
 /**
  * Scene pembuka: kotak kado yang menunggu diketuk (goyangan idle-nya murni
@@ -45,18 +46,25 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
     trigger.classList.add("is-opening");
     pageEl?.classList.add("is-gift-zoom");
 
+    // Jarak partikel dihitung dari diagonal layar (bukan angka piksel
+    // tetap) supaya di layar besar pun kelopaknya benar-benar sampai
+    // menutupi ujung layar, bukan cuma meledak kecil di tengah.
+    const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
+
     spawnPetalBurst(trigger.getBoundingClientRect(), {
-      flowerCount: 12,
-      leafCount: 6,
-      ribbonCount: 9,
-      distanceMin: 140,
-      distanceMax: 360,
+      flowerCount: particleBudget({ low: 16, mid: 24, high: 32 }),
+      leafCount: particleBudget({ low: 7, mid: 11, high: 15 }),
+      ribbonCount: particleBudget({ low: 9, mid: 14, high: 19 }),
+      distanceMin: diagonal * 0.2,
+      distanceMax: diagonal * 0.68,
       angleSpread: Math.PI * 2, // ledakan ke segala arah
+      sizeScale: 1.6,
+      lifetimeMs: 2200,
     });
 
     setTimeout(() => {
       pageEl?.classList.remove("is-gift-zoom");
       onComplete?.();
-    }, 1300);
+    }, 1550);
   });
 }

@@ -19,10 +19,10 @@
 
 export const content = {
   // Nama panggilan adik/teman dekat kamu.
-  friendName: "Indah",
+  friendName: "Adik",
 
   // Nama kamu sendiri, muncul di akhir surat.
-  fromName: "GANTI INI: nama kamu",
+  fromName: "EL",
 
   // Umur yang dirayakan (angka besar di halaman reveal).
   age: 16,
@@ -32,7 +32,7 @@ export const content = {
   // Label "For {friendName}" dibangun otomatis dari friendName di atas
   // (lihat main.js) -- tidak perlu diisi terpisah di sini.
   // ------------------------------------------------------------------
-  openingHint: "ketuk kadonya, yuk",
+  openingHint: "CLICK THE BOX!",
 
   // ------------------------------------------------------------------
   // 1. GERBANG KATA SANDI -- halaman kedua, setelah kado dibuka.
@@ -41,48 +41,48 @@ export const content = {
   // sayang) yang dihapus.
   // ------------------------------------------------------------------
   password: "2807", // GANTI INI -- format bebas, panjangnya menentukan jumlah kotak PIN
-  gateSubtitle: "Hii, ayo tebak passwordnya, I bet u knoww!!",
+  gateSubtitle: "Hii, guess the password, I bet u knoww!!",
   passwordClue: "clue : your birthday",
-  gateWrongMessage: "oops, wrong! try again",
+  gateWrongMessage: "wrongg! try again hahaha",
 
   // ------------------------------------------------------------------
   // 2. SAPAAN -- setelah kode benar. Aslinya "hi, pretty" -- kata
   // "pretty" (pujian ke pasangan) dihapus.
   // ------------------------------------------------------------------
-  greetingText: "hi!!",
-  greetingButton: "tap disinii <3",
+  greetingText: "HI!!",
+  greetingButton: "tap<3",
 
   // ------------------------------------------------------------------
   // 3. KONFIRMASI -- yes/no persis referensi, + reaksi bercanda yang
   // di video memang berbahasa Indonesia.
   // ------------------------------------------------------------------
-  confirmQuestion: "are you readyy to open thisss?",
+  confirmQuestion: "are you ready to open thiss?",
   confirmYes: "yess",
   confirmNo: "noo",
-  confirmReactionText: "OH GITU SEKARANG KAMU SAMA AKU?",
-  confirmReactionButton: "back",
+  confirmReactionText: "GRRR!",
+  confirmReactionButton: "backkk",
 
   // ------------------------------------------------------------------
   // 4. REVEAL UMUR -- aslinya "Today, this pretty girl turns 18!
   // happy birthday, my love" -- "pretty girl" & "my love" dihapus.
   // ------------------------------------------------------------------
   revealPrefix: "today, you turn",
-  revealSuffix: "happy birthday!!",
-  revealButton: "open it <3",
+  revealSuffix: "happy birthday!",
+  revealButton: "open it<3",
 
   // ------------------------------------------------------------------
   // 5. PESAN UTAMA -- aslinya "Happy birthday to my most beautiful,
   // loving, and caring girlfriend, I love youu so muchh!!" --
   // "girlfriend"/"beautiful"/"I love you" diganti versi platonis.
   // ------------------------------------------------------------------
-  mainMessageTitle: "happy birthday to one of the kindest, most caring people I know 🤍",
-  mainMessageBody: "so glad to have you in my life!!",
-  mainMessageButton: "i have something for you 🎁",
+  mainMessageTitle: "happy birthday to one of the kindest, most caring people I know istg",
+  mainMessageBody: "so glad to know you in this life!!",
+  mainMessageButton: "i have something for you🎁",
 
   // ------------------------------------------------------------------
   // 6. TRANSISI -- persis referensi, tidak ada nuansa romantis.
   // ------------------------------------------------------------------
-  transitionText: "okayy last one, i made something for your birthday, read it slowly okayyy",
+  transitionText: "last one, i made something for your birthday, read it slowly okay",
   continueLabel: "klik ini <3",
 
   // ------------------------------------------------------------------
@@ -94,7 +94,7 @@ export const content = {
   memories: [
     {
       src: "assets/images/foto-1.jpg",
-      line: "This was our first picture, a moment I'll always remember",
+      line: "This was our first picture, a moment who can make me feel so lovely",
     },
     {
       src: "assets/images/foto-2.jpg",
@@ -102,15 +102,15 @@ export const content = {
     },
     {
       src: "assets/images/foto-3.jpg",
-      line: "Thank you for being part of my days and making them feel special",
+      line: "Thank you for being part of my days at that time",
     },
     {
       src: "assets/images/foto-4.jpg",
-      line: "I hope we keep creating memories, big and small, together",
+      line: "I hope you can have a good life until you die",
     },
     {
       src: "assets/images/foto-5.jpg",
-      line: "you deserve the world, and I'll always be here for you",
+      line: "you deserve the world!",
     },
   ],
 
@@ -123,7 +123,7 @@ export const content = {
   // 3. Tempel di sini.
   // ------------------------------------------------------------------
   songTitle: "some songs for you 🎵",
-  songSubtitle: "a few songs that remind me of you",
+  songSubtitle: "a few songs that remind me of..",
   spotifyEmbedSrc: "https://open.spotify.com/embed/playlist/GANTI_INI?utm_source=generator",
 
   // ------------------------------------------------------------------
@@ -132,13 +132,13 @@ export const content = {
   // ------------------------------------------------------------------
   letterHeading: "happy birthday",
   letterBody: [
-    "On your special day, I just want to remind you how grateful I am to have you in my life.",
+    "On your special day, I just want to remind you how grateful I am to can know you in this life.",
     "Thank you for being the amazing person you are -- kind, caring, and always making everything feel a little warmer just by being around.",
     "I hope this new year of your life brings you happiness, peace, and all the good things you've been wishing for.",
     "May every step you take feel lighter, and may you always be surrounded by people who truly care about you.",
     "You deserve so much more than you realize.",
-    "I'm thankful I get to celebrate you, today and hopefully many days after this.",
-    "I look forward to creating more memories with you, growing together, and being there for you in all the simple ways that matter most.",
+    "I'm thankful I get to celebrate you, today and maybe in another life.",
+    "I look forward to creating more memories with you like a before and being there for you in all the simple ways that matter most.",
     "Happy birthday.",
   ],
   // Tombol ini di video aslinya memang berbahasa Indonesia.
@@ -148,7 +148,7 @@ export const content = {
   // MUSIK LATAR (widget mengambang)
   // src: path ke file mp3 di folder assets/audio/
   // ------------------------------------------------------------------
-  backgroundAudioSrc: "assets/audio/lagu-latar.mp3",
-  backgroundAudioTitle: "GANTI INI: judul lagu",
+  backgroundAudioSrc: "assets/audio/lagu-latar.mp3", // diperbaiki -- sebelumnya "asset/Sound-Good.mp3" (folder "asset" itu tidak ada; filenya sudah ditaruh di assets/audio/lagu-latar.mp3, lihat README)
+  backgroundAudioTitle: "Again",
   backgroundAudioSubtitle: "background music",
 };
