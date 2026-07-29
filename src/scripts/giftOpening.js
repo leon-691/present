@@ -7,8 +7,9 @@ import { particleBudget } from "./deviceTier.js";
  * CSS -- keyframe `gift-wobble` di sections.css, jalan otomatis lewat
  * animation di .gift-box). Modul ini menangani:
  * 1. Interaksi ketuk/klik (sekali saja -- dijaga lewat flag `hasOpened`).
- * 2. Ledakan kelopak bunga + daun + pita dari titik kotak kado (lihat
- *    petalBurst.js -- modul yang sama dipakai lagi saat surat disegel).
+ * 2. Ledakan foto bunga asli + potongan pita dari titik kotak kado (lihat
+ *    petalBurst.js -- modul yang sama dipakai lagi saat surat disegel),
+ *    dibesarkan sampai menutupi layar.
  * 3. Sedikit "zoom" kamera pada seluruh halaman.
  * 4. Memberi tahu main.js kapan boleh unlock musik (segera, di titik
  *    ketuk -- gesture pertama pengguna) dan kapan boleh pindah ke halaman
@@ -28,6 +29,19 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
   }
 
   let hasOpened = false;
+
+  function resetGift() {
+    hasOpened = false;
+    trigger.classList.remove("is-opening");
+    trigger.removeAttribute("aria-disabled");
+  }
+
+  // #opening bisa aktif lagi kalau Indah menekan "Kembali ke Awal" di
+  // surat (pageFlow.goToStart() -> activate(0)). Tanpa ini, kotak kado
+  // akan tetap dalam wujud "sudah meledak" (tutup & badan sudah
+  // opacity:0 dari sesi sebelumnya) alih-alih kembali utuh menunggu
+  // diketuk -- lihat laporan bug dari Anda.
+  scene.addEventListener("view:settled", resetGift);
 
   trigger.addEventListener("click", () => {
     if (hasOpened) return;
@@ -52,13 +66,12 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
     const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
 
     spawnPetalBurst(trigger.getBoundingClientRect(), {
-      flowerCount: particleBudget({ low: 16, mid: 24, high: 32 }),
-      leafCount: particleBudget({ low: 7, mid: 11, high: 15 }),
-      ribbonCount: particleBudget({ low: 9, mid: 14, high: 19 }),
-      distanceMin: diagonal * 0.2,
-      distanceMax: diagonal * 0.68,
+      flowerCount: particleBudget({ low: 20, mid: 30, high: 42 }),
+      ribbonCount: particleBudget({ low: 10, mid: 16, high: 22 }),
+      distanceMin: diagonal * 0.18,
+      distanceMax: diagonal * 0.7,
       angleSpread: Math.PI * 2, // ledakan ke segala arah
-      sizeScale: 1.6,
+      sizeScale: 2.4, // foto asli, bukan ikon SVG kecil -- dibesarkan spy benar2 menutupi layar
       lifetimeMs: 2200,
     });
 

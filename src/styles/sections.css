@@ -323,7 +323,9 @@ html.motion-reduced .gift-glow {
    Salah satu dari 3 titik bunga BOLEH tampil sbg aksen (opening/
    transisi/ending). Foto bunga asli (bukan SVG), dibulatkan spt
    medali pressed-flower supaya tetap senada, bukan foto mentah
-   bebas ukuran. */
+   bebas ukuran. Sticker "read it slowly" sengaja ditaruh di SINI
+   (bukan di halaman surat) -- teksnya cocok ("...read it slowly
+   okay"), dan ini tempat sticker itu seharusnya berada. */
 .transition-text {
   font-family: var(--font-accent);
   font-size: var(--fs-xl);
@@ -333,11 +335,12 @@ html.motion-reduced .gift-glow {
 
 .transition-flowers {
   display: flex;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   align-items: flex-end;
+  justify-content: center;
 }
 
-.transition-flowers img {
+.transition-flowers img:not(.sticker) {
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -351,6 +354,12 @@ html.motion-reduced .gift-glow {
 
 .transition-flowers img:last-child {
   transform: rotate(5deg);
+}
+
+.transition-flowers .sticker {
+  width: 108px;
+  height: 108px;
+  margin: 0 calc(var(--space-xs) * -1);
 }
 
 /* --- 8. Lagu ---
@@ -410,17 +419,24 @@ html.motion-reduced .gift-glow {
 
 .letter-bouquet {
   position: absolute;
-  width: min(52vw, 230px);
-  height: min(52vw, 230px);
+  width: min(56vw, 240px);
+  height: min(56vw, 240px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.92;
-  filter: drop-shadow(0 6px 10px var(--color-shadow));
 }
 
-.letter-bouquet svg {
-  width: 100%;
-  height: 100%;
+/* Posisi/ukuran tiap foto diisi lewat custom property inline (--bx/--by/--bs)
+   di HTML, bukan hardcode di sini -- supaya satu aturan CSS ini melayani
+   semua foto di kedua sudut (bl & tr) sekaligus. */
+.letter-bouquet__photo {
+  position: absolute;
+  left: var(--bx);
+  bottom: var(--by);
+  width: var(--bs);
+  height: var(--bs);
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 4px var(--color-surface), 0 6px 14px var(--color-shadow);
 }
 
 .letter-bouquet--bl {

@@ -567,24 +567,6 @@ html.motion-reduced .is-shaking {
   clip-path: polygon(0% 0%, 100% 0%, 100.0% 84.66%, 87.5% 83.08%, 75.0% 85.05%, 62.5% 94.96%, 50.0% 86.51%, 37.5% 88.16%, 25.0% 88.29%, 12.5% 91.99%, 0.0% 90.48%);
 }
 
-/* Sticker "read it slowly" ditempel di pojok banner -- posisinya sengaja
-   di dalam batas atas (bukan top negatif) supaya tidak ikut terpotong
-   clip-path robekan di atas. */
-.sticker--pin {
-  position: absolute;
-  top: 6px;
-  right: 2px;
-  width: 58px;
-  height: 58px;
-  transform: rotate(9deg);
-  filter: drop-shadow(0 4px 8px var(--color-shadow));
-  animation: float-y 3.2s ease-in-out infinite;
-}
-
-html.motion-reduced .sticker--pin {
-  animation: none;
-}
-
 .letter-heading.is-revealed {
   opacity: 1;
   transform: translateY(0);

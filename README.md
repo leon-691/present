@@ -13,12 +13,14 @@ tombol "Kembali ke Awal" balik ke **kado pembuka**, bukan ke gerbang --
 karena kado sekarang halaman paling pertama).
 
 Identitas visualnya: kertas, sticker lucu (aset asli di `assets/stickers/`),
-dan tulisan tangan -- tidak ada karakter/maskot buatan sendiri. Bunga
-SENGAJA dibatasi jadi aksen di 3 titik saja: opening (ledakan kado),
-transisi (2 foto bunga asli, dibulatkan jadi medali kecil), dan ending
-di halaman surat (bouquet SVG di 2 sudut layar) -- bukan dekorasi utama
-di semua halaman. Ilustrasi bunga/daun (SVG) ada di sprite awal
-`index.html`; foto bunga & sticker asli ada di `assets/`.
+dan tulisan tangan -- tidak ada karakter/maskot buatan sendiri, dan TIDAK
+ADA ilustrasi bunga SVG sama sekali. Bunga SENGAJA dibatasi jadi aksen di
+3 titik saja, semuanya foto asli (`assets/images/bunga-1.jpg` s/d
+`bunga-11.jpg`, hasil crop dari foto yang kamu kirim): opening (ledakan
+kado, foto-fotonya dibesarkan sampai menutupi layar), transisi (2 foto
+bunga + sticker "read it slowly" di tengahnya, dibulatkan jadi medali
+kecil), dan ending di halaman surat (kluster foto bunga di 2 sudut layar)
+-- bukan dekorasi utama di semua halaman.
 
 ## 1. Yang wajib kamu isi sebelum di-deploy
 
@@ -69,19 +71,15 @@ src/
   scripts/                logic interaktif, satu modul per fitur
     pageFlow.js             navigasi antar-halaman (page-based)
     giftOpening.js          scene kado di halaman paling pertama
-    petalBurst.js            ledakan/hembusan kelopak -- dipakai bareng oleh
-                              giftOpening.js (kado dibuka) & letterScrub.js
-                              (surat disegel)
+    petalBurst.js            ledakan/hembusan bunga (FOTO ASLI dari
+                              assets/images/bunga-*.jpg, bukan SVG) --
+                              dipakai bareng oleh giftOpening.js (kado
+                              dibuka) & letterScrub.js (surat disegel)
     passwordGate.js        gerbang PIN
     confirmStep.js           konfirmasi yes/no + reaksi
     letterScrub.js             efek sorotan baca di surat panjang
     musicPlayer.js               widget musik mengambang
     confetti.js                    efek konfeti
-    flowerIntro.js                 kelopak jatuh -- TIDAK dipanggil otomatis
-                                    saat ini (perannya diambil alih ledakan
-                                    kado), file & fungsinya tetap ada kalau
-                                    suatu saat mau dipakai lagi di titik lain,
-                                    lihat catatan di main.js -> init()
     motionPreference.js            satu sumber kebenaran preferensi motion
                                     (gabung sinyal OS + toggle manual "Efek
                                     Visual") -- modul lain baca isReduced()
@@ -93,12 +91,13 @@ src/
     touchTilt.js                    padanan tilt utk layar sentuh + gyro ambient
   data/content.js         SEMUA teks & konfigurasi -- edit di sini saja
 assets/
-  images/                 foto kenangan (foto-1..5.jpg) + 2 foto bunga aksen
-                          (accent-bunga-1/2.jpg, dipakai di halaman transisi)
+  images/                 foto kenangan (foto-1..5.jpg) + 11 foto bunga
+                          (bunga-1..11.jpg, dipakai berulang di opening/
+                          transisi/ending -- lihat catatan bunga-vs-sticker
+                          di bagian atas README ini)
   audio/                  musik latar (lagu-latar.mp3)
   stickers/               5 sticker asli (webp) -- identitas visual UTAMA
-                          sekarang; lihat catatan bunga-vs-sticker di
-                          bagian atas README ini
+                          sekarang
 ```
 
 ## 5. Kalau mau ubah warna

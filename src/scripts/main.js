@@ -155,8 +155,8 @@ function init() {
   let music;
 
   const steps = [
-    // Harus jadi step PERTAMA: semua modul di bawah (flowerIntro,
-    // confetti, tiltEffect, dst) membaca isMotionReduced() dari
+    // Harus jadi step PERTAMA: semua modul di bawah (confetti,
+    // tiltEffect, dst) membaca isMotionReduced() dari
     // motionPreference.js, jadi nilainya harus sudah siap sebelum
     // step-step lain jalan. detectDeviceTier() juga ditaruh di sini
     // supaya class `tier-*` sudah ada di <html> sebelum CSS lain
@@ -191,12 +191,11 @@ function init() {
     ["efek surat", initLetterScrub],
     ["efek tilt foto (mouse)", initTiltEffect],
     ["efek tilt foto (sentuh)", initTouchTilt],
-    // Catatan desain: flowerIntro (kelopak jatuh otomatis saat load) TIDAK
-    // lagi dipanggil di sini secara otomatis -- perannya sebagai "momen wow
-    // pertama" sekarang diambil alih ledakan kado (giftOpening.js), yang
-    // baru terpicu SETELAH Indah mengetuk kado, bukan sebelum dia sempat
-    // berinteraksi apa pun. Modul & fungsinya tetap ada di file terpisah,
-    // tinggal dipanggil lagi kalau suatu saat mau dipakai di titik lain.
+    // Catatan desain: momen "wow pertama" dulunya kelopak SVG jatuh
+    // otomatis saat load (flowerIntro.js) -- modul itu sudah DIHAPUS
+    // total (bukan cuma dinonaktifkan), karena isinya murni ilustrasi
+    // SVG bunga yang sudah digantikan foto bunga asli + ledakan kado
+    // (giftOpening.js), yang baru terpicu SETELAH Indah mengetuk kado.
     ["atmosfer ambient", initAmbientBackground],
     ["cursor glow & magnetic button", initCursorGlow],
     ["ripple feedback tombol/tuts", initRippleEffect],

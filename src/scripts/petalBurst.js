@@ -1,20 +1,47 @@
 /**
- * Ledakan/hembusan partikel kelopak bunga + daun + potongan pita dari satu
- * titik asal. Dipakai di 2 momen berbeda (parameter beda, keyframe & CSS
- * sama -- lihat .petal-burst di animations.css):
- * - giftOpening.js: meledak ke segala arah, banyak partikel (kado dibuka)
+ * Ledakan/hembusan partikel bunga (FOTO ASLI, bukan SVG -- lihat FLOWER_PHOTOS
+ * di bawah) + potongan pita dari satu titik asal. Dipakai di 2 momen berbeda
+ * (parameter beda, keyframe & CSS sama -- lihat .petal-burst di animations.css):
+ * - giftOpening.js: meledak ke segala arah, banyak partikel besar, sampai
+ *   menutupi layar (kado dibuka)
  * - letterScrub.js: lebih sedikit & condong satu arah, spt tertiup angin
  *   (surat disegel/ditutup)
  */
 
-const PETAL_COLORS = ["var(--color-primary)", "var(--color-blush)", "var(--color-primary-light)"];
+const FLOWER_PHOTOS = [
+  "assets/images/bunga-1.jpg",
+  "assets/images/bunga-2.jpg",
+  "assets/images/bunga-3.jpg",
+  "assets/images/bunga-4.jpg",
+  "assets/images/bunga-5.jpg",
+  "assets/images/bunga-6.jpg",
+  "assets/images/bunga-7.jpg",
+  "assets/images/bunga-8.jpg",
+  "assets/images/bunga-9.jpg",
+  "assets/images/bunga-10.jpg",
+  "assets/images/bunga-11.jpg",
+];
+
 const RIBBON_COLORS = ["var(--color-secondary)", "var(--color-primary)"];
+
+/**
+ * Kocok urutan foto (Fisher-Yates) supaya semua 11 foto kebagian tampil
+ * merata sebelum ada yang berulang, bukan dipilih acak murni yang bisa
+ * kebetulan sering muncul foto yang sama.
+ */
+function shuffledPhotoCycle() {
+  const arr = [...FLOWER_PHOTOS];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 /**
  * @param {DOMRect} originRect - elemen sumber ledakan (posisinya dipakai sbg titik tengah)
  * @param {object} [opts]
  * @param {number} [opts.flowerCount=12]
- * @param {number} [opts.leafCount=6]
  * @param {number} [opts.ribbonCount=9]
  * @param {number} [opts.distanceMin=140] - jarak minimum partikel terbang (px)
  * @param {number} [opts.distanceMax=360] - jarak maksimum partikel terbang (px)
@@ -26,7 +53,6 @@ const RIBBON_COLORS = ["var(--color-secondary)", "var(--color-primary)"];
 export function spawnPetalBurst(originRect, opts = {}) {
   const {
     flowerCount = 12,
-    leafCount = 6,
     ribbonCount = 9,
     distanceMin = 140,
     distanceMax = 360,
@@ -66,27 +92,16 @@ export function spawnPetalBurst(originRect, opts = {}) {
     el.style.animationDelay = `${delay}s`;
   }
 
+  // Foto asli (bukan ilustrasi SVG) -- dibulatkan spt medali pressed-flower,
+  // konsisten dgn .transition-flowers di halaman transisi.
+  const photoCycle = shuffledPhotoCycle();
   for (let i = 0; i < flowerCount; i++) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 40 40");
-    svg.classList.add("petal-burst__piece");
-    svg.style.setProperty("--petal-color", PETAL_COLORS[i % PETAL_COLORS.length]);
-    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#petal-flower");
-    svg.appendChild(use);
-    place(svg, (16 + Math.random() * 18) * sizeScale);
-    container.appendChild(svg);
-  }
-
-  for (let i = 0; i < leafCount; i++) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 30 40");
-    svg.classList.add("petal-burst__piece");
-    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#leaf-single");
-    svg.appendChild(use);
-    place(svg, (14 + Math.random() * 14) * sizeScale);
-    container.appendChild(svg);
+    const img = document.createElement("img");
+    img.src = photoCycle[i % photoCycle.length];
+    img.alt = "";
+    img.className = "petal-burst__piece petal-burst__piece--photo";
+    place(img, (34 + Math.random() * 48) * sizeScale);
+    container.appendChild(img);
   }
 
   for (let i = 0; i < ribbonCount; i++) {

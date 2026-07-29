@@ -1,7 +1,7 @@
 /**
  * Preferensi motion terpusat.
  *
- * Kenapa modul ini ada: sebelumnya tiap fitur (flowerIntro, confetti,
+ * Kenapa modul ini ada: sebelumnya tiap fitur (giftOpening, confetti,
  * tiltEffect, letterScrub) memanggil `matchMedia("(prefers-reduced-motion:
  * reduce)")` sendiri-sendiri. Itu sebenarnya praktik aksesibilitas yang
  * benar SECARA UMUM -- tapi banyak HP Android melaporkan
