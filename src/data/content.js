@@ -42,8 +42,8 @@ export const content = {
   // ------------------------------------------------------------------
   password: "2807", // GANTI INI -- format bebas, panjangnya menentukan jumlah kotak PIN
   gateSubtitle: "Hii, guess the password, I bet u knoww!!",
-  passwordClue: "clue : your birthday",
-  gateWrongMessage: "wrongg! try again hahaha",
+  passwordClue: "clue : Your Birthday",
+  gateWrongMessage: "wrong! hahaha try again",
 
   // ------------------------------------------------------------------
   // 2. SAPAAN -- setelah kode benar. Aslinya "hi, pretty" -- kata
@@ -59,15 +59,15 @@ export const content = {
   confirmQuestion: "are you ready to open thiss?",
   confirmYes: "yess",
   confirmNo: "noo",
-  confirmReactionText: "GRRR!",
-  confirmReactionButton: "backkk",
+  confirmReactionText: "GRR!",
+  confirmReactionButton: "backk",
 
   // ------------------------------------------------------------------
   // 4. REVEAL UMUR -- aslinya "Today, this pretty girl turns 18!
   // happy birthday, my love" -- "pretty girl" & "my love" dihapus.
   // ------------------------------------------------------------------
   revealPrefix: "today, you turn",
-  revealSuffix: "happy birthday!",
+  revealSuffix: "Happy Birthday!",
   revealButton: "open it<3",
 
   // ------------------------------------------------------------------
@@ -75,7 +75,7 @@ export const content = {
   // loving, and caring girlfriend, I love youu so muchh!!" --
   // "girlfriend"/"beautiful"/"I love you" diganti versi platonis.
   // ------------------------------------------------------------------
-  mainMessageTitle: "happy birthday to one of the kindest, most caring people I know istg",
+  mainMessageTitle: "happy birthday to one of the kindest, most caring people I know",
   mainMessageBody: "so glad to know you in this life!!",
   mainMessageButton: "i have something for you🎁",
 
@@ -94,7 +94,7 @@ export const content = {
   memories: [
     {
       src: "assets/images/foto-1.jpg",
-      line: "This was our first picture, a moment who can make me feel so lovely",
+      line: "This was our first picture, a moment who can make me always remember",
     },
     {
       src: "assets/images/foto-2.jpg",
@@ -110,7 +110,7 @@ export const content = {
     },
     {
       src: "assets/images/foto-5.jpg",
-      line: "you deserve the world!",
+      line: "you deserve the WORLD!",
     },
   ],
 
@@ -124,25 +124,25 @@ export const content = {
   // ------------------------------------------------------------------
   songTitle: "some songs for you 🎵",
   songSubtitle: "a few songs that remind me of..",
-  spotifyEmbedSrc: "https://open.spotify.com/embed/playlist/GANTI_INI?utm_source=generator",
+  spotifyEmbedSrc: "https://open.spotify.com/embed/playlist/6Y4M4jypuf6qIMts8vKIlN?utm_source=generator",
 
   // ------------------------------------------------------------------
   // 9. SURAT PANJANG -- satu paragraf mengalir, persis alur referensi
   // (cuma "my love" & "loving you" diganti versi platonis).
   // ------------------------------------------------------------------
-  letterHeading: "happy birthday",
+  letterHeading: "Happy Late Birthday",
   // Petunjuk drag di scene amplop -- muncul sebelum & sesudah amplop dibuka.
   envelopeHint: "tarik amplopnya ke atas",
   envelopePaperHint: "tarik kertasnya keluar",
   letterBody: [
     "On your special day, I just want to remind you how grateful I am to can know you in this life.",
-    "Thank you for being the amazing person you are -- kind, caring, and always making everything feel a little warmer just by being around.",
+    "Thank you for being the amazing person, you are -- kind, caring, and always making everything feel a little warmer just by being around.",
     "I hope this new year of your life brings you happiness, peace, and all the good things you've been wishing for.",
     "May every step you take feel lighter, and may you always be surrounded by people who truly care about you.",
     "You deserve so much more than you realize.",
-    "I'm thankful I get to celebrate you, today and maybe in another life.",
-    "I look forward to creating more memories with you like a before and being there for you in all the simple ways that matter most.",
-    "Happy birthday.",
+    "I'm thankful I get to celebrate you today, oneday or maybe in another life.",
+    "I look forward to creating more memories with you like a before bu i know that's a bad idea.",
+    "Happy Birthday.",
   ],
   // Tombol ini di video aslinya memang berbahasa Indonesia.
   closingButton: "Kembali ke Awal",
@@ -152,6 +152,6 @@ export const content = {
   // src: path ke file mp3 di folder assets/audio/
   // ------------------------------------------------------------------
   backgroundAudioSrc: "assets/audio/lagu-latar.mp3", // diperbaiki -- sebelumnya "asset/Sound-Good.mp3" (folder "asset" itu tidak ada; filenya sudah ditaruh di assets/audio/lagu-latar.mp3, lihat README)
-  backgroundAudioTitle: "Again",
+  backgroundAudioTitle: "Lihat Nanti",
   backgroundAudioSubtitle: "background music",
 };
