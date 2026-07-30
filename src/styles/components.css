@@ -139,9 +139,9 @@
 
 /* --- Sticker (identitas visual utama sekarang) ---
    PNG/WebP asli dari asset-sticker, bukan ilustrasi dibuat di sini.
-   Bunga (SVG) sengaja disisakan cuma sbg AKSEN di 3 momen: opening
-   (ledakan kado), transisi (.transition-flowers), & ending/surat
-   (.letter-bouquet) -- lihat sections.css. */
+   Bunga (foto asli, TIDAK ADA lagi SVG) sengaja dibatasi cuma jadi AKSEN
+   di 3 momen: opening (ledakan kado), transisi (.transition-flowers), &
+   ending/surat (.envelope-scene__decor) -- lihat sections.css. */
 .sticker {
   width: 132px;
   height: 132px;
@@ -539,81 +539,30 @@ html.motion-reduced .is-shaking {
   transform: rotate(-1.2deg);
 }
 
-/* --- Surat panjang (scroll internal di dalam satu halaman) ---
-   Halaman ini satu-satunya yang isinya lebih panjang dari satu
-   layar, jadi discroll di DALAM container-nya sendiri (bukan
-   scroll dokumen). Judul tetap terlihat (sticky) sementara isi
-   surat menyala kalimat demi kalimat mengikuti posisi baca. */
-.letter-scroll {
-  width: 100%;
-  max-height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--space-lg) var(--space-md) calc(var(--space-lg) + 64px);
-}
-
+/* --- Isi surat ---
+   Ditampilkan statis di atas foto kertas (.envelope-scene__paper-content
+   di sections.css) setelah kertas ditarik keluar penuh -- TIDAK ADA lagi
+   efek ketik/sorot-baca per-kalimat (dihapus atas permintaan; dulu ada
+   di sini, sekarang cukup teks biasa yang langsung terbaca semua). */
 .letter-heading {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--color-bg-soft);
-  padding: var(--space-md) var(--space-sm) calc(var(--space-sm) + 10px);
-  margin: 0 calc(var(--space-md) * -1);
+  font-family: var(--font-accent);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
   text-align: center;
-  color: var(--color-ink);
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 700ms var(--ease-dream), transform 700ms var(--ease-dream);
-  clip-path: polygon(0% 0%, 100% 0%, 100.0% 84.66%, 87.5% 83.08%, 75.0% 85.05%, 62.5% 94.96%, 50.0% 86.51%, 37.5% 88.16%, 25.0% 88.29%, 12.5% 91.99%, 0.0% 90.48%);
-}
-
-.letter-heading.is-revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.letter-heading::after {
-  content: "";
-  display: block;
-  width: 56px;
-  height: 2px;
-  margin: var(--space-xs) auto 0;
-  background: linear-gradient(90deg, transparent, var(--color-secondary), transparent);
+  margin-bottom: var(--space-sm);
 }
 
 .letter-body {
-  max-width: 32ch;
+  max-width: 30ch;
   margin: 0 auto;
 }
 
 .letter-sentence {
-  font-size: var(--fs-base);
-  line-height: 1.8;
-  color: var(--color-text-soft);
-  opacity: 0.4;
-  margin: 0 0 8svh;
-  transition: color var(--dur-base) var(--ease-out-soft),
-              opacity var(--dur-base) var(--ease-out-soft),
-              text-shadow var(--dur-slow) var(--ease-out-soft);
-}
-
-.letter-sentence.is-active {
+  font-size: var(--fs-sm);
+  line-height: 1.75;
   color: var(--color-ink);
-  opacity: 1;
-  /* cahaya hangat lembut di belakang kalimat yang lagi dibaca --
-     seperti disorot cahaya lilin, bukan cuma ganti warna teks */
-  text-shadow: 0 0 30px rgba(var(--aurora-3), 0.4);
-}
-
-.letter-sentence.is-typing::after {
-  content: "";
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  margin-left: 2px;
-  background: currentColor;
-  vertical-align: -0.15em;
-  animation: cursor-blink 800ms step-end infinite;
+  margin: 0 0 var(--space-sm);
 }
 
 .letter-sentence:last-child {

@@ -8,19 +8,10 @@
  *   (surat disegel/ditutup)
  */
 
-const FLOWER_PHOTOS = [
-  "assets/images/bunga-1.jpg",
-  "assets/images/bunga-2.jpg",
-  "assets/images/bunga-3.jpg",
-  "assets/images/bunga-4.jpg",
-  "assets/images/bunga-5.jpg",
-  "assets/images/bunga-6.jpg",
-  "assets/images/bunga-7.jpg",
-  "assets/images/bunga-8.jpg",
-  "assets/images/bunga-9.jpg",
-  "assets/images/bunga-10.jpg",
-  "assets/images/bunga-11.jpg",
-];
+const FLOWER_PHOTOS = Array.from(
+  { length: 21 },
+  (_, i) => `assets/images/bunga-png/bunga-${i + 1}.png`
+);
 
 const RIBBON_COLORS = ["var(--color-secondary)", "var(--color-primary)"];
 

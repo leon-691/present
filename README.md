@@ -8,19 +8,26 @@ yang di video memang berbahasa Indonesia).
 Urutannya: **kado pembuka** (kotak kado yang diketuk) → gerbang kata
 sandi → sapaan → konfirmasi (+ reaksi lucu kalau pilih "noo") → reveal
 umur → pesan utama → transisi → halaman kenangan (satu foto + satu
-kalimat per halaman) → lagu kenangan → surat panjang (scroll internal,
-tombol "Kembali ke Awal" balik ke **kado pembuka**, bukan ke gerbang --
-karena kado sekarang halaman paling pertama).
+kalimat per halaman) → lagu kenangan → **surat** (amplop di-drag ke atas
+utk dibuka, kertas surat di dalamnya di-drag lagi utk ditarik keluar,
+baru isi surat tampil -- tombol "Kembali ke Awal" balik ke **kado
+pembuka**, bukan ke gerbang, karena kado sekarang halaman paling
+pertama).
 
 Identitas visualnya: kertas, sticker lucu (aset asli di `assets/stickers/`),
 dan tulisan tangan -- tidak ada karakter/maskot buatan sendiri, dan TIDAK
 ADA ilustrasi bunga SVG sama sekali. Bunga SENGAJA dibatasi jadi aksen di
-3 titik saja, semuanya foto asli (`assets/images/bunga-1.jpg` s/d
-`bunga-11.jpg`, hasil crop dari foto yang kamu kirim): opening (ledakan
-kado, foto-fotonya dibesarkan sampai menutupi layar), transisi (2 foto
-bunga + sticker "read it slowly" di tengahnya, dibulatkan jadi medali
-kecil), dan ending di halaman surat (kluster foto bunga di 2 sudut layar)
--- bukan dekorasi utama di semua halaman.
+3 titik saja, semuanya foto asli:
+- **opening** -- ledakan `assets/images/bunga-png/bunga-1..21.png` (foto
+  transparan, background dihapus otomatis), dibesarkan sampai menutupi
+  layar
+- **transisi** -- 2 foto (`assets/images/bunga-1.jpg`/`bunga-2.jpg`) +
+  sticker "read it slowly" di tengahnya, dibulatkan jadi medali kecil
+- **ending/surat** -- amplop & kertas surat asli (`assets/images/surat/`),
+  dikelilingi 10 dekorasi pilihan dari `assets/images/surat/deco-*.png`
+  (foto asli yang kamu kirim, background dihapus otomatis juga)
+
+Di luar 3 titik itu, halaman lain sengaja dibiarkan tenang tanpa bunga.
 
 ## 1. Yang wajib kamu isi sebelum di-deploy
 
@@ -71,13 +78,17 @@ src/
   scripts/                logic interaktif, satu modul per fitur
     pageFlow.js             navigasi antar-halaman (page-based)
     giftOpening.js          scene kado di halaman paling pertama
-    petalBurst.js            ledakan/hembusan bunga (FOTO ASLI dari
-                              assets/images/bunga-*.jpg, bukan SVG) --
-                              dipakai bareng oleh giftOpening.js (kado
-                              dibuka) & letterScrub.js (surat disegel)
+    envelopeReveal.js        scene amplop+kertas surat di halaman terakhir --
+                              drag amplop ke atas utk buka, drag kertas ke
+                              atas lagi utk tarik keluar, baru isi surat tampil
+    petalBurst.js            ledakan/hembusan bunga (FOTO ASLI transparan dari
+                              assets/images/bunga-png/, bukan SVG) -- dipakai
+                              bareng oleh giftOpening.js (kado dibuka) &
+                              letterScrub.js (surat "disegel" saat kembali ke awal)
     passwordGate.js        gerbang PIN
     confirmStep.js           konfirmasi yes/no + reaksi
-    letterScrub.js             efek sorotan baca di surat panjang
+    letterScrub.js             cuma micro-interaction "segel" tombol kembali
+                                ke awal -- efek ketik/sorot-baca sudah dihapus
     musicPlayer.js               widget musik mengambang
     confetti.js                    efek konfeti
     motionPreference.js            satu sumber kebenaran preferensi motion
@@ -91,10 +102,11 @@ src/
     touchTilt.js                    padanan tilt utk layar sentuh + gyro ambient
   data/content.js         SEMUA teks & konfigurasi -- edit di sini saja
 assets/
-  images/                 foto kenangan (foto-1..5.jpg) + 11 foto bunga
-                          (bunga-1..11.jpg, dipakai berulang di opening/
-                          transisi/ending -- lihat catatan bunga-vs-sticker
-                          di bagian atas README ini)
+  images/                 foto kenangan (foto-1..5.jpg), 2 foto bunga utk
+                          medali transisi (bunga-1.jpg/bunga-2.jpg), folder
+                          bunga-png/ (21 foto bunga transparan utk ledakan
+                          kado), folder surat/ (amplop, kertas surat, +10
+                          dekorasi -- lihat catatan di bagian atas README ini)
   audio/                  musik latar (lagu-latar.mp3)
   stickers/               5 sticker asli (webp) -- identitas visual UTAMA
                           sekarang

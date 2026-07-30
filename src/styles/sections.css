@@ -390,22 +390,11 @@ html.motion-reduced .gift-glow {
   max-width: 32ch;
 }
 
-/* --- 10. Surat panjang --- 
-   Satu-satunya halaman yang scroll internal, jadi layoutnya beda:
-   isi (.letter-scroll) mengisi penuh tinggi halaman, bukan
-   di-center seperti halaman lain. Dibungkus nuansa kertas/buku fisik:
-   dasar krem hangat + tekstur serat halus + bayangan tepi kiri yang
-   mensimulasikan lipatan/ketebalan halaman buku. */
-/* --- 9. Surat -- ending scene ---
-   Dekorasi (glow/bouquet/tepi robek) semua position:absolute relatif ke
-   #surat (yang sendiri position:absolute penuh 1 layar, warisan dari
-   .view) -- artinya tetap diam di tempat walau .letter-scroll di
-   dalamnya discroll. PENTING: goyangan angin (sway) HANYA diberi ke
-   elemen dekoratif ini, TIDAK PERNAH ke .letter-scroll atau isinya --
-   letterScrub.js menghitung ulang posisi baca dari getBoundingClientRect()
-   tiap frame scroll, jadi kalau container-nya sendiri ikut bergoyang,
-   perhitungan itu akan meleset/berkedip. Teks yang sedang dibaca harus
-   tetap diam, hanya bingkainya (kertas tepi & bunga) yang bergerak. */
+/* --- 9. Surat -- ending scene, sekarang berupa amplop yang di-drag
+   terbuka + kertas yang ditarik keluar (bukan lagi list scroll panjang).
+   .letter-glow tetap ambient light non-scrolling di lapisan paling
+   belakang; sisanya (dekorasi, amplop, kertas) semua di dalam
+   .envelope-scene yang menutup penuh 1 layar. */
 .letter-glow {
   position: absolute;
   inset: 0;
@@ -417,81 +406,8 @@ html.motion-reduced .gift-glow {
   z-index: 0;
 }
 
-.letter-bouquet {
-  position: absolute;
-  width: min(56vw, 240px);
-  height: min(56vw, 240px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Posisi/ukuran tiap foto diisi lewat custom property inline (--bx/--by/--bs)
-   di HTML, bukan hardcode di sini -- supaya satu aturan CSS ini melayani
-   semua foto di kedua sudut (bl & tr) sekaligus. */
-.letter-bouquet__photo {
-  position: absolute;
-  left: var(--bx);
-  bottom: var(--by);
-  width: var(--bs);
-  height: var(--bs);
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 0 0 4px var(--color-surface), 0 6px 14px var(--color-shadow);
-}
-
-.letter-bouquet--bl {
-  left: -6%;
-  bottom: -4%;
-  animation: bouquet-sway 7s ease-in-out infinite;
-}
-
-@keyframes bouquet-sway {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(1.6deg); }
-}
-
-.letter-bouquet--tr {
-  right: -6%;
-  top: -4%;
-  /* transform statis dipakai sbg fallback pas reduced-motion (animation:none
-     di bawah) -- tanpa ini simbolnya kembali ke orientasi bl (tidak
-     terpantul) begitu animasinya dimatikan. */
-  transform: scale(-1, -1);
-  animation: bouquet-sway-flipped 8s ease-in-out infinite reverse;
-}
-
-@keyframes bouquet-sway-flipped {
-  0%, 100% { transform: scale(-1, -1) rotate(0deg); }
-  50% { transform: scale(-1, -1) rotate(1.6deg); }
-}
-
-.letter-edge-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 26px;
-  background: var(--color-bg-soft);
-  clip-path: polygon(0.0% 21.65%, 11.1% 22.07%, 22.2% 21.06%, 33.3% 6.5%, 44.4% 15.66%, 55.6% 12.63%, 66.7% 14.54%, 77.8% 7.35%, 88.9% 8.46%, 100.0% 13.0%, 100% 100%, 0% 100%);
-  pointer-events: none;
-  z-index: 3;
-  animation: edge-sway 6s ease-in-out infinite;
-}
-
-@keyframes edge-sway {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
-}
-
-html.motion-reduced .letter-bouquet,
-html.motion-reduced .letter-edge-bottom {
-  animation: none;
-}
-
 .section--letter {
   padding: 0;
-  align-items: stretch;
-  justify-content: flex-start;
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(74, 54, 43, 0.07), transparent 5%),
@@ -508,12 +424,199 @@ html.motion-reduced .letter-edge-bottom {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
 }
 
-.section--letter .letter-scroll {
+.envelope-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* --- Dekorasi (murni asset-surat yang dikirim, tidak dicampur bunga lain) ---
+   Posisi/ukuran/rotasi tiap gambar lewat custom property inline
+   (--dx/--dy/--dsize/--drot) di HTML -- satu aturan CSS melayani semua. */
+.envelope-scene__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 500ms var(--ease-out-soft);
+}
+
+.envelope-scene__decor img {
+  position: absolute;
+  left: var(--dx);
+  top: var(--dy);
+  width: var(--dsize);
+  height: auto;
+  transform: translate(-50%, -50%) rotate(var(--drot));
+  filter: drop-shadow(0 6px 12px var(--color-shadow));
+  animation: envelope-decor-sway 6s ease-in-out infinite;
+  animation-delay: calc(var(--drot, 0) * -80ms);
+}
+
+@keyframes envelope-decor-sway {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -4px; }
+}
+
+.envelope-scene__decor.is-hidden {
+  opacity: 0;
+  transition-delay: 100ms;
+}
+
+/* --- Amplop --- */
+.envelope-scene__envelope {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(74vw, 300px);
+  border: none;
+  padding: 0;
+  background: none;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  animation: envelope-bob 2.8s ease-in-out infinite;
+  touch-action: none;
+  cursor: grab;
+}
+
+.envelope-scene__envelope img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 24px 50px -14px var(--color-shadow);
+  pointer-events: none;
+}
+
+@keyframes envelope-bob {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -8px; }
+}
+
+.envelope-scene__envelope.is-dragging {
+  animation: none;
+  margin-top: 0;
+  cursor: grabbing;
+  transition: none !important;
+}
+
+.envelope-scene__envelope:not(.is-dragging) {
+  transition: transform 420ms var(--ease-petal), opacity 420ms var(--ease-petal);
+}
+
+.envelope-scene__envelope.is-committed {
+  animation: none;
+  transform: translate(-50%, -50%) translateY(-220px) rotate(-7deg) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.motion-reduced .envelope-scene__envelope {
+  animation: none;
+}
+
+/* --- Kertas surat --- */
+.envelope-scene__paper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(76vw, 300px);
+  height: min(66vh, 500px);
+  z-index: 1;
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 130px)) scale(0.46);
+  transition: transform 560ms var(--ease-petal), opacity 460ms var(--ease-petal);
+  pointer-events: none;
+  touch-action: none;
+}
+
+.envelope-scene__paper.is-peeking {
+  opacity: 1;
+  transform: translate(-50%, calc(-50% + 88px)) scale(0.8);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.envelope-scene__paper.is-dragging {
+  transition: none !important;
+  cursor: grabbing;
+}
+
+.envelope-scene__paper.is-final {
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+  touch-action: auto;
+  cursor: default;
+}
+
+.envelope-scene__paper-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 24px 50px -12px var(--color-shadow);
+}
+
+.envelope-scene__paper-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.envelope-scene__paper-content {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20% 14% 12%;
+  text-align: center;
+  background: rgba(255, 251, 243, 0.5);
+  opacity: 0;
+  transition: opacity 550ms var(--ease-dream);
+}
+
+.envelope-scene__paper.is-final .envelope-scene__paper-content {
+  touch-action: pan-y;
+}
+
+.envelope-scene__paper-content.is-revealed {
+  opacity: 1;
+}
+
+html.motion-reduced .envelope-scene__paper {
+  transition-duration: 160ms;
+}
+
+/* --- Petunjuk drag --- */
+.envelope-scene__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 4px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
   text-align: center;
-  height: 100%;
-  position: relative;
-  z-index: 1;
+  transition: opacity 400ms var(--ease-out-soft);
+}
+
+.envelope-scene__hint-arrow {
+  font-size: 1.3em;
+  color: var(--color-primary);
+  animation: envelope-hint-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes envelope-hint-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(-6px); opacity: 1; }
+}
+
+.envelope-scene__hint.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }

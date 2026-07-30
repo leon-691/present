@@ -249,9 +249,8 @@ html.tier-low .view--blur.is-leaving {
 }
 
 .petal-burst__piece--photo {
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 0 0 3px var(--color-surface), 0 4px 10px var(--color-shadow);
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px var(--color-shadow));
 }
 
 .petal-burst__piece--ribbon {

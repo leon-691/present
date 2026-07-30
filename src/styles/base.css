@@ -58,14 +58,6 @@ html.motion-reduced .motion-decorative * {
   animation: none !important;
 }
 
-html.motion-reduced .letter-heading {
-  transition-duration: 120ms;
-}
-
-html.motion-reduced .letter-body {
-  scroll-behavior: auto;
-}
-
 h1, h2, h3 {
   font-family: var(--font-display);
   font-weight: 600;

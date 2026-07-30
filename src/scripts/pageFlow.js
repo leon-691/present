@@ -93,8 +93,8 @@ export function initPageFlow() {
     incoming.classList.add("is-active");
     currentIndex = index;
 
-    // Reset scroll internal (dipakai halaman surat) tiap kali halaman
-    // itu ditampilkan lagi, supaya selalu mulai dari atas.
+    // Reset scroll internal (elemen ber-atribut data-scroll-container)
+    // tiap kali halaman itu ditampilkan lagi, supaya selalu mulai dari atas.
     incoming.querySelector("[data-scroll-container]")?.scrollTo(0, 0);
 
     // Pindahkan fokus keyboard/pembaca-layar ke halaman baru -- tanpa

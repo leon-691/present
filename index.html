@@ -197,32 +197,56 @@
         <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>
 
-      <!-- 9. SURAT PANJANG -- ending scene, momen paling penting.
-           Dekorasi (glow/bouquet/tepi robek) SENGAJA dipisah dari
-           .letter-scroll (container scroll asli, tidak disentuh) supaya
-           perhitungan posisi baca di letterScrub.js tetap akurat --
-           lihat catatan di sections.css. -->
+      <!-- 9. SURAT -- ending scene, momen paling penting. Amplop di-drag
+           ke atas utk dibuka, lalu kertas surat di dalamnya di-drag lagi
+           utk ditarik keluar; isi surat (statis, tanpa efek ketik/sorot
+           baca) baru tampil setelah kertas keluar penuh. Semua logic
+           drag & reset-nya ada di envelopeReveal.js. -->
       <section class="view view--mask section--letter" id="surat">
         <div class="letter-glow motion-decorative" aria-hidden="true"></div>
-        <div class="letter-bouquet letter-bouquet--bl motion-decorative" aria-hidden="true">
-          <img class="letter-bouquet__photo" src="assets/images/bunga-3.jpg" alt="" style="--bx: -4%; --by: -6%; --bs: 96px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-4.jpg" alt="" style="--bx: 16%; --by: 4%; --bs: 72px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-5.jpg" alt="" style="--bx: 32%; --by: 22%; --bs: 56px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-6.jpg" alt="" style="--bx: 4%; --by: 34%; --bs: 44px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-7.jpg" alt="" style="--bx: 44%; --by: 12%; --bs: 36px;" />
-        </div>
-        <div class="letter-bouquet letter-bouquet--tr motion-decorative" aria-hidden="true">
-          <img class="letter-bouquet__photo" src="assets/images/bunga-8.jpg" alt="" style="--bx: -4%; --by: -6%; --bs: 96px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-9.jpg" alt="" style="--bx: 16%; --by: 4%; --bs: 72px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-10.jpg" alt="" style="--bx: 32%; --by: 22%; --bs: 56px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-11.jpg" alt="" style="--bx: 4%; --by: 34%; --bs: 44px;" />
-          <img class="letter-bouquet__photo" src="assets/images/bunga-1.jpg" alt="" style="--bx: 44%; --by: 12%; --bs: 36px;" />
-        </div>
-        <div class="letter-edge-bottom motion-decorative" aria-hidden="true"></div>
-        <div class="letter-scroll" data-scroll-container>
-          <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
-          <div class="letter-body" data-letter-body></div>
-          <button class="btn" data-go-start data-key="closingButton">kembali ke awal</button>
+
+        <div class="envelope-scene" data-envelope-scene>
+          <!-- Dekorasi murni dari asset-surat yang Anda kirim, tidak dicampur
+               dengan bunga generik lain. Disebar mengelilingi amplop. -->
+          <div class="envelope-scene__decor motion-decorative" aria-hidden="true">
+            <img src="assets/images/surat/deco-1.png" alt="" style="--dx:8%; --dy:14%; --dsize:88px; --drot:-12deg;" />
+            <img src="assets/images/surat/deco-5.png" alt="" style="--dx:87%; --dy:10%; --dsize:72px; --drot:14deg;" />
+            <img src="assets/images/surat/deco-6.png" alt="" style="--dx:4%; --dy:46%; --dsize:70px; --drot:9deg;" />
+            <img src="assets/images/surat/deco-8.png" alt="" style="--dx:93%; --dy:40%; --dsize:82px; --drot:-10deg;" />
+            <img src="assets/images/surat/deco-9.png" alt="" style="--dx:10%; --dy:80%; --dsize:92px; --drot:6deg;" />
+            <img src="assets/images/surat/deco-11.png" alt="" style="--dx:90%; --dy:78%; --dsize:86px; --drot:-7deg;" />
+            <img src="assets/images/surat/deco-13.png" alt="" style="--dx:50%; --dy:5%; --dsize:64px; --drot:0deg;" />
+            <img src="assets/images/surat/deco-17.png" alt="" style="--dx:22%; --dy:93%; --dsize:60px; --drot:12deg;" />
+            <img src="assets/images/surat/deco-18.png" alt="" style="--dx:78%; --dy:92%; --dsize:66px; --drot:-9deg;" />
+            <img src="assets/images/surat/deco-19.png" alt="" style="--dx:50%; --dy:97%; --dsize:54px; --drot:4deg;" />
+          </div>
+
+          <!-- Kertas surat -- diam di belakang amplop, baru bisa ditarik
+               setelah amplop "terbuka" (lihat envelopeReveal.js). Isi surat
+               (data-letter-content) sengaja hidden sampai kertas BENAR-BENAR
+               tertarik keluar penuh. -->
+          <div class="envelope-scene__paper" data-letter-paper role="button" tabindex="-1" aria-label="Tarik kertas surat ke atas untuk mengeluarkannya">
+            <div class="envelope-scene__paper-bg" aria-hidden="true">
+              <img src="assets/images/surat/kertas-surat.png" alt="" draggable="false" />
+            </div>
+            <div class="envelope-scene__paper-content" data-letter-content data-scroll-container hidden>
+              <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
+              <div class="letter-body" data-letter-body></div>
+              <button class="btn" data-go-start data-key="closingButton">kembali ke awal</button>
+            </div>
+          </div>
+
+          <!-- Amplop -- elemen pertama yang dilihat & satu-satunya yang bisa
+               diinteraksi di awal. Drag ke atas utk buka (tap/Enter jadi
+               fallback aksesibilitas, bukan cara utama). -->
+          <button class="envelope-scene__envelope" type="button" data-envelope aria-label="Tarik amplop ke atas untuk membuka suratnya">
+            <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+          </button>
+
+          <p class="envelope-scene__hint fade-up fade-up--delay-2" data-envelope-hint>
+            <span class="envelope-scene__hint-arrow motion-decorative" aria-hidden="true">&uarr;</span>
+            <span data-key="envelopeHint">tarik amplopnya ke atas</span>
+          </p>
         </div>
       </section>
 

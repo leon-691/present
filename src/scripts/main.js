@@ -4,6 +4,7 @@ import { initConfirmStep } from "./confirmStep.js";
 import { initMusicPlayer } from "./musicPlayer.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
+import { initEnvelopeReveal } from "./envelopeReveal.js";
 import { initTiltEffect } from "./tiltEffect.js";
 import { initTouchTilt } from "./touchTilt.js";
 import { initGiftOpening } from "./giftOpening.js";
@@ -27,6 +28,12 @@ function populateStaticText() {
     const key = el.dataset.keySrc;
     if (content[key] !== undefined) el.src = content[key];
   });
+
+  // Teks tahap-2 scene surat (setelah amplop dibuka, ganti jadi "tarik
+  // kertasnya keluar") -- disimpan sbg data-attribute, dipakai
+  // envelopeReveal.js saat envelope-nya di-drag terbuka.
+  const envelopeHintEl = document.querySelector("[data-envelope-hint]");
+  if (envelopeHintEl) envelopeHintEl.dataset.paperHint = content.envelopePaperHint;
 
   document.title = `Untuk ${content.friendName}`;
 
@@ -84,7 +91,9 @@ function renderMemoryPages() {
   placeholder.replaceWith(fragment);
 }
 
-/** Render surat panjang sebagai kalimat-kalimat yang menyala saat discroll */
+/** Render surat panjang sbg paragraf statis (tanpa efek ketik/sorot baca --
+ * dihapus atas permintaan; teks langsung terbaca penuh begitu kertas surat
+ * selesai ditarik keluar, lihat envelopeReveal.js). */
 function renderLetterBody() {
   const container = document.querySelector("[data-letter-body]");
   if (!container) return;
@@ -188,6 +197,7 @@ function init() {
     ["kado pembuka", () => setupGiftOpening(music, pageFlow)],
     ["gerbang", () => setupGate(music, pageFlow)],
     ["konfirmasi", () => setupConfirm(pageFlow)],
+    ["scene amplop & tarik kertas", initEnvelopeReveal],
     ["efek surat", initLetterScrub],
     ["efek tilt foto (mouse)", initTiltEffect],
     ["efek tilt foto (sentuh)", initTouchTilt],

@@ -131,6 +131,9 @@ export const content = {
   // (cuma "my love" & "loving you" diganti versi platonis).
   // ------------------------------------------------------------------
   letterHeading: "happy birthday",
+  // Petunjuk drag di scene amplop -- muncul sebelum & sesudah amplop dibuka.
+  envelopeHint: "tarik amplopnya ke atas",
+  envelopePaperHint: "tarik kertasnya keluar",
   letterBody: [
     "On your special day, I just want to remind you how grateful I am to can know you in this life.",
     "Thank you for being the amazing person you are -- kind, caring, and always making everything feel a little warmer just by being around.",
