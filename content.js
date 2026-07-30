@@ -124,7 +124,7 @@ export const content = {
   // ------------------------------------------------------------------
   songTitle: "some songs for you 🎵",
   songSubtitle: "a few songs that remind me of..",
-  spotifyEmbedSrc: "https://open.spotify.com/embed/playlist/6Y4M4jypuf6qIMts8vKIlN?si=4V-yazUXRRe_hmKWKriMKg&utm_source=copy-link&sci=spotify%3Acard-config%3A6olLE8vYUCUBL0rNObqulX?utm_source=generator",
+  spotifyEmbedSrc: "https://open.spotify.com/embed/playlist/6Y4M4jypuf6qIMts8vKIlN?utm_source=generator",
 
   // ------------------------------------------------------------------
   // 9. SURAT PANJANG -- satu paragraf mengalir, persis alur referensi
