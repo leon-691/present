@@ -272,18 +272,5 @@
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script type="module" src="src/scripts/main.js"></script>
 
-
-  <!-- Spotify iFrame API: enhancement for playback synchronization.
-       The native iframe above remains as a visual fallback if the API
-       cannot load or initialize. -->
-  <script>
-    window.onSpotifyIframeApiReady = function (IFrameAPI) {
-      window.__spotifyIframeAPI = IFrameAPI;
-      window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", {
-        detail: IFrameAPI
-      }));
-    };
-  </script>
-  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>
