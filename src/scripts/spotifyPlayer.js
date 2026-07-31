@@ -1,113 +1,82 @@
 /**
- * Spotify Embed controller.
+ * Spotify synchronization controller.
  *
- * The native iframe in index.html is the fallback that guarantees the player
- * remains visible. Spotify's official iFrame API is an enhancement used only
- * for playback synchronization. createController() replaces the mount element
- * with its managed Embed when the API is available.
+ * The native iframe remains visible unless the official IFrame API has
+ * successfully created a controller AND emitted its `ready` event. The API
+ * therefore can never turn a working Spotify player into an empty box.
  */
 export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
-  const mount = document.querySelector("#spotify-embed");
-  if (!mount) return { pause: () => false, isReady: () => false };
+  const fallback = document.querySelector("#spotify-native-fallback");
+  const apiMount = document.querySelector("#spotify-api-mount");
+  if (!fallback || !apiMount) return { pause: () => false, isReady: () => false };
 
   let controller = null;
   let ready = false;
   let pendingPause = false;
-  let apiReadyHandler = null;
   let initialized = false;
+  let apiReadyHandler = null;
 
-  const normalizeUrl = (value) => {
-    try {
-      return new URL(value, window.location.href).toString();
-    } catch {
-      return value;
-    }
-  };
+  function showApiPlayer() {
+    fallback.hidden = true;
+    fallback.setAttribute("aria-hidden", "true");
+    apiMount.hidden = false;
+    apiMount.setAttribute("aria-hidden", "false");
+  }
 
-  const create = (IFrameAPI) => {
+  function create(IFrameAPI) {
     if (!IFrameAPI?.createController || initialized) return;
     initialized = true;
-
     try {
-      IFrameAPI.createController(
-        mount,
-        {
-          width: "100%",
-          height: "450",
-          url: normalizeUrl(src),
-        },
-        (EmbedController) => {
-          controller = EmbedController;
-
-          controller.addListener("ready", () => {
-            ready = true;
-
-            if (pendingPause) {
-              pendingPause = false;
-              try {
-                controller.pause();
-              } catch (err) {
-                console.warn("[Spotify] pause after ready failed:", err);
-              }
+      IFrameAPI.createController(apiMount, {
+        width: "100%",
+        height: "450",
+        url: src,
+      }, (EmbedController) => {
+        controller = EmbedController;
+        controller.addListener("ready", () => {
+          ready = true;
+          showApiPlayer();
+          if (pendingPause) {
+            pendingPause = false;
+            try { controller.pause(); } catch (err) {
+              console.warn("[Spotify] queued pause failed:", err);
             }
-          });
-
-          controller.addListener("playback_started", () => {
-            onPlaybackStart?.();
-          });
-
-          controller.addListener("playback_update", (event) => {
-            if (event?.data?.isPaused === false) {
-              onPlaybackStart?.();
-            }
-          });
-        }
-      );
+          }
+        });
+        controller.addListener("playback_started", () => onPlaybackStart?.());
+        controller.addListener("playback_update", (event) => {
+          if (event?.data?.isPaused === false) onPlaybackStart?.();
+        });
+      });
     } catch (err) {
       initialized = false;
-      console.warn("[Spotify] IFrame API initialization failed; native fallback remains available.", err);
+      console.warn("[Spotify] API failed; native player remains active.", err);
     }
-  };
+  }
 
-  // Official API callback may have fired before this module initialized.
   if (window.__spotifyIframeAPI) {
     create(window.__spotifyIframeAPI);
   } else {
-    apiReadyHandler = (event) => {
-      create(event.detail);
-    };
-    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler);
+    apiReadyHandler = (event) => create(event.detail);
+    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
   }
 
-  // If the API never arrives, leave the native iframe completely untouched.
   setTimeout(() => {
-    if (apiReadyHandler && !controller) {
+    if (!ready && apiReadyHandler) {
       window.removeEventListener("spotify-iframe-api-ready", apiReadyHandler);
       apiReadyHandler = null;
-      console.warn("[Spotify] IFrame API unavailable; using native iframe fallback.");
+      console.warn("[Spotify] API unavailable/slow; native player remains active.");
     }
   }, 10000);
 
   function pause() {
     if (controller && ready) {
-      try {
-        controller.pause();
-        return true;
-      } catch (err) {
-        console.warn("[Spotify] pause failed:", err);
-        return false;
-      }
+      try { controller.pause(); return true; }
+      catch (err) { console.warn("[Spotify] pause failed:", err); return false; }
     }
-
-    // If the API is still initializing, remember the request.
-    if (!controller) {
-      pendingPause = true;
-    }
+    pendingPause = true;
     return false;
   }
 
-  return {
-    pause,
-    isReady: () => ready,
-  };
+  return { pause, isReady: () => ready };
 }
