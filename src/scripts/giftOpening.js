@@ -3,80 +3,92 @@ import { spawnPetalBurst } from "./petalBurst.js";
 import { particleBudget } from "./deviceTier.js";
 
 /**
- * Scene pembuka: kotak kado yang menunggu diketuk (goyangan idle-nya murni
- * CSS -- keyframe `gift-wobble` di sections.css, jalan otomatis lewat
- * animation di .gift-box). Modul ini menangani:
- * 1. Interaksi ketuk/klik (sekali saja -- dijaga lewat flag `hasOpened`).
- * 2. Ledakan foto bunga asli dari titik kotak kado (lihat petalBurst.js --
- *    modul yang sama dipakai lagi saat surat disegel), dibesarkan &
- *    diperbanyak sampai menutupi layar.
- * 3. Sedikit "zoom" kamera pada seluruh halaman.
- * 4. Memberi tahu main.js kapan boleh unlock musik (segera, di titik
- *    ketuk -- gesture pertama pengguna) dan kapan boleh pindah ke halaman
- *    gerbang (onComplete, setelah animasi reda).
- *
- * Reduced motion: goyangan/ledakan/zoom dilewati (dekoratif), tapi
- * berpindah halaman tetap terjadi (esensial, cuma tanpa hiasan) -- sesuai
- * prinsip motion governance yang sama dipakai modul lain di situs ini.
+ * Opening kado:
+ * - idle wobble tetap ringan
+ * - interaksi pertama memberi sedikit "hesitation" sebelum kado terbuka
+ * - tutup membuka dengan dorongan ke atas
+ * - cahaya + bunga menjadi transisi utama
+ * - isi/struktur kado tidak diubah
  */
 export function initGiftOpening({ onFirstInteraction, onComplete }) {
   const scene = document.querySelector("#opening");
   const trigger = document.querySelector("[data-gift-trigger]");
   const pageEl = document.querySelector(".page");
+  const hintEl = scene?.querySelector("[data-key='openingHint']");
   if (!scene || !trigger) {
     onComplete?.();
     return;
   }
 
   let hasOpened = false;
+  let hintTimer = null;
 
-  function resetGift() {
-    hasOpened = false;
-    trigger.classList.remove("is-opening");
-    trigger.removeAttribute("aria-disabled");
+  const defaultHint = hintEl?.textContent ?? "";
+
+  function clearHintTimer() {
+    if (hintTimer) {
+      clearTimeout(hintTimer);
+      hintTimer = null;
+    }
   }
 
-  // #opening bisa aktif lagi kalau Indah menekan "Kembali ke Awal" di
-  // surat (pageFlow.goToStart() -> activate(0)). Tanpa ini, kotak kado
-  // akan tetap dalam wujud "sudah meledak" (tutup & badan sudah
-  // opacity:0 dari sesi sebelumnya) alih-alih kembali utuh menunggu
-  // diketuk -- lihat laporan bug dari Anda.
+  function resetGift() {
+    clearHintTimer();
+    hasOpened = false;
+    trigger.classList.remove("is-opening", "is-hesitating");
+    trigger.removeAttribute("aria-disabled");
+    pageEl?.classList.remove("is-gift-zoom");
+    if (hintEl) {
+      hintEl.textContent = defaultHint;
+      hintEl.classList.remove("is-opening-hint");
+    }
+  }
+
   scene.addEventListener("view:settled", resetGift);
 
   trigger.addEventListener("click", () => {
     if (hasOpened) return;
     hasOpened = true;
     trigger.setAttribute("aria-disabled", "true");
-
     onFirstInteraction?.();
 
     if (isMotionReduced()) {
-      // Esensial (pindah halaman) tetap terjadi, dekoratif (goyangan,
-      // ledakan, zoom) dilewati sepenuhnya.
       onComplete?.();
       return;
     }
 
-    trigger.classList.add("is-opening");
-    pageEl?.classList.add("is-gift-zoom");
+    // Fase singkat: kado seperti "menahan" sebelum benar-benar dibuka.
+    trigger.classList.add("is-hesitating");
+    if (hintEl) {
+      hintEl.textContent = "hmm...";
+      hintEl.classList.add("is-opening-hint");
+    }
 
-    // Jarak partikel dihitung dari diagonal layar (bukan angka piksel
-    // tetap) supaya di layar besar pun kelopaknya benar-benar sampai
-    // menutupi ujung layar, bukan cuma meledak kecil di tengah.
-    const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
+    hintTimer = setTimeout(() => {
+      trigger.classList.remove("is-hesitating");
+      trigger.classList.add("is-opening");
 
-    spawnPetalBurst(trigger.getBoundingClientRect(), {
-      flowerCount: particleBudget({ low: 34, mid: 50, high: 68 }),
-      distanceMin: diagonal * 0.08, // sebagian tetap dekat pusat, biar tidak ada "lubang" kosong di tengah
-      distanceMax: diagonal * 0.8,
-      angleSpread: Math.PI * 2, // ledakan ke segala arah
-      sizeScale: 3.4, // foto asli, bukan ikon SVG kecil -- dibesarkan spy benar2 menutupi layar
-      lifetimeMs: 2400,
-    });
+      if (hintEl) {
+        hintEl.textContent = "okay okay...";
+      }
 
-    setTimeout(() => {
-      pageEl?.classList.remove("is-gift-zoom");
-      onComplete?.();
-    }, 1750);
+      pageEl?.classList.add("is-gift-zoom");
+
+      const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
+
+      spawnPetalBurst(trigger.getBoundingClientRect(), {
+        flowerCount: particleBudget({ low: 34, mid: 50, high: 68 }),
+        distanceMin: diagonal * 0.08,
+        distanceMax: diagonal * 0.8,
+        angleSpread: Math.PI * 2,
+        sizeScale: 3.4,
+        lifetimeMs: 2400,
+      });
+
+      hintTimer = setTimeout(() => {
+        pageEl?.classList.remove("is-gift-zoom");
+        onComplete?.();
+      }, 1750);
+    }, 620);
   });
 }

@@ -1,163 +1,122 @@
 /**
- * Spotify IFrame API bridge.
+ * Spotify synchronization controller.
  *
- * There is intentionally ONE Spotify player on screen.
- * The official IFrame API replaces #spotify-api-mount with the Embed it owns.
- * The old native iframe is kept only as a fallback if the API cannot be
- * initialized; it is never shown at the same time as the API player.
+ * The Spotify IFrame API must own the exact Embed that the visitor plays.
+ * There is deliberately only ONE Spotify player at a time. A native iframe
+ * is created only as a fallback when the official IFrame API cannot load.
+ *
+ * This keeps the existing v4 page/music architecture intact while fixing the
+ * previous two-player collision.
  */
 export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
-  const wrapper = document.querySelector("#spotify-embed");
-  const apiMount = document.querySelector("#spotify-api-mount");
-  const fallback = document.querySelector("#spotify-native-fallback");
+  const mount = document.querySelector("#spotify-embed");
+  if (!mount) return { pause: () => false, isReady: () => false };
 
-  if (!wrapper || !apiMount) {
-    return { pause: () => false, isReady: () => false };
-  }
+  const FALLBACK_SRC = (() => {
+    try {
+      const url = new URL(src || "");
+      url.search = "";
+      return url.toString();
+    } catch {
+      return src || "";
+    }
+  })();
 
   let controller = null;
   let ready = false;
-  let initialized = false;
-  let fallbackTimer = null;
-  let apiReadyHandler = null;
   let pendingPause = false;
+  let initialized = false;
   let fallbackShown = false;
+  let apiReadyHandler = null;
+  let fallbackTimer = null;
 
-  // Extract the playlist ID and use Spotify's canonical URI for the API.
-  // The native embed URL can still be used unchanged as a fallback.
-  function getPlaylistUri(value) {
-    try {
-      const url = new URL(value, window.location.href);
-      const match = url.pathname.match(/\/playlist\/([^/?#]+)/i);
-      if (match?.[1]) return `spotify:playlist:${match[1]}`;
-    } catch (_) {
-      // Fall through to the original value.
-    }
-    return value;
+  function setPlayerSize(el) {
+    el.style.width = "100%";
+    el.style.height = "450px";
+    el.style.minHeight = "450px";
+    el.style.border = "0";
+    el.style.display = "block";
   }
 
-  const spotifyUri = getPlaylistUri(src);
-
-  function hideFallback() {
-    if (!fallback) return;
-    fallback.hidden = true;
-    fallback.setAttribute("aria-hidden", "true");
-  }
-
-  function showFallback() {
-    if (!fallback || fallbackShown || ready) return;
+  function showNativeFallback() {
+    if (ready || fallbackShown || controller) return;
     fallbackShown = true;
-    fallback.hidden = false;
-    fallback.setAttribute("aria-hidden", "false");
-    apiMount.hidden = true;
-    apiMount.setAttribute("aria-hidden", "true");
-    apiMount.classList.remove("is-api-active");
+    mount.replaceChildren();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "spotify-native-fallback";
+    iframe.src = FALLBACK_SRC;
+    iframe.title = "Spotify playlist";
+    iframe.loading = "lazy";
+    iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+    iframe.setAttribute("frameborder", "0");
+    setPlayerSize(iframe);
+    mount.appendChild(iframe);
   }
 
-  function showApi() {
-    if (!ready) return;
-    fallbackShown = false;
-    if (fallback) {
-      fallback.hidden = true;
-      fallback.setAttribute("aria-hidden", "true");
-    }
-    apiMount.hidden = false;
-    apiMount.setAttribute("aria-hidden", "false");
-    apiMount.classList.add("is-api-active");
-  }
-
-  function pauseController() {
-    if (!controller || !ready) {
-      pendingPause = true;
-      return false;
-    }
-
-    try {
-      const result = controller.pause();
-      // The API currently does not require us to await pause(), but accepting
-      // a Promise keeps this bridge safe if the implementation changes.
-      if (result && typeof result.catch === "function") {
-        result.catch((error) => {
-          console.warn("[Spotify] pause() rejected:", error);
-        });
-      }
-      return true;
-    } catch (error) {
-      console.warn("[Spotify] pause() failed:", error);
-      return false;
+  function cleanupFallbackTimer() {
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
     }
   }
 
   function create(IFrameAPI) {
-    if (initialized || !IFrameAPI?.createController) return;
+    if (!IFrameAPI?.createController || initialized || ready) return;
     initialized = true;
+    fallbackShown = false;
 
-    // API mount is visible to layout while Spotify initializes. It is not
-    // visually shown to the user until the controller is ready.
-    apiMount.hidden = false;
-
-    const options = {
-      width: "100%",
-      height: "450",
-      uri: spotifyUri,
-    };
+    // The API replaces this mount with the one and only controlled Embed.
+    // Do not create another iframe beside it.
+    mount.replaceChildren();
 
     try {
-      IFrameAPI.createController(apiMount, options, (EmbedController) => {
-        controller = EmbedController;
+      IFrameAPI.createController(
+        mount,
+        {
+          width: "100%",
+          height: "450",
+          url: FALLBACK_SRC,
+        },
+        (EmbedController) => {
+          controller = EmbedController;
 
-        controller.addListener("ready", () => {
-          ready = true;
-          if (fallbackTimer) {
-            clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
+          controller.addListener("ready", () => {
+            ready = true;
+            cleanupFallbackTimer();
 
-          showApi();
+            if (pendingPause) {
+              pendingPause = false;
+              try {
+                controller.pause();
+              } catch (err) {
+                console.warn("[Spotify] queued pause failed:", err);
+              }
+            }
+          });
 
-          if (pendingPause) {
-            pendingPause = false;
-            pauseController();
-          }
-        });
-
-        controller.addListener("playback_started", () => {
-          onPlaybackStart?.();
-        });
-
-        controller.addListener("playback_update", (event) => {
-          if (event?.data && event.data.isPaused === false) {
+          controller.addListener("playback_started", () => {
             onPlaybackStart?.();
-          }
-        });
+          });
 
-        // Do not wait indefinitely for a separate ready event. The controller
-        // itself exists only after Spotify has successfully created the Embed,
-        // so this keeps the UI from getting stuck on the fallback on browsers
-        // where the ready event is delivered unusually early.
-        queueMicrotask(() => {
-          if (controller && !ready) {
-            // The real ready listener remains authoritative; this does NOT
-            // mark the controller ready prematurely.
-          }
-        });
-      });
-    } catch (error) {
+          controller.addListener("playback_update", (event) => {
+            if (event?.data?.isPaused === false) {
+              onPlaybackStart?.();
+            }
+          });
+        },
+      );
+    } catch (err) {
       initialized = false;
-      showFallback();
-      console.warn("[Spotify] createController failed:", error);
+      controller = null;
+      ready = false;
+      console.warn("[Spotify] IFrame API failed; using native fallback.", err);
+      showNativeFallback();
     }
   }
 
-  // Start from a single-player state: API mount is the intended player,
-  // fallback is hidden until we know the API cannot initialize.
-  if (fallback) {
-    fallback.hidden = true;
-    fallback.setAttribute("aria-hidden", "true");
-  }
-  apiMount.hidden = false;
-  apiMount.classList.remove("is-api-active");
-
+  // Official API callback may have fired before this module ran, or may fire
+  // after it. Support both without loading the API a second time.
   if (window.__spotifyIframeAPI) {
     create(window.__spotifyIframeAPI);
   } else {
@@ -165,17 +124,32 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
     window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
   }
 
-  // If the API cannot create a controller, restore the proven native player.
+  // If the official API cannot load, the site still gets a usable Spotify
+  // player. Importantly, the fallback is created IN THE SAME MOUNT, so it can
+  // never coexist with an API-controlled player.
   fallbackTimer = setTimeout(() => {
-    if (!ready) showFallback();
-    if (apiReadyHandler) {
-      window.removeEventListener("spotify-iframe-api-ready", apiReadyHandler);
-      apiReadyHandler = null;
+    if (!ready && !controller) {
+      showNativeFallback();
     }
-  }, 12000);
+  }, 9000);
+
+  function pause() {
+    if (controller && ready) {
+      try {
+        controller.pause();
+        return true;
+      } catch (err) {
+        console.warn("[Spotify] pause failed:", err);
+        return false;
+      }
+    }
+
+    if (!fallbackShown) pendingPause = true;
+    return false;
+  }
 
   return {
-    pause: pauseController,
+    pause,
     isReady: () => ready,
   };
 }
