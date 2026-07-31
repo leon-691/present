@@ -263,9 +263,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <!-- Spotify IFrame API: optional enhancement for playback synchronization.
-       The native iframe above remains the safe fallback if the API cannot
-       load or initialize. -->
   <script>
     window.onSpotifyIframeApiReady = (IFrameAPI) => {
       window.__spotifyIframeAPI = IFrameAPI;
@@ -274,5 +271,6 @@
   </script>
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script type="module" src="src/scripts/main.js"></script>
+
 </body>
 </html>
