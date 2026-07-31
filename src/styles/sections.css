@@ -705,45 +705,37 @@ html.motion-reduced .envelope-scene__paper {
 }
 
 
-/* Spotify sync: native iframe stays visible until API controller is ready. */
+/* Spotify: exactly one visible player. The IFrame API owns the API mount;
+   the native iframe is only a fallback when controller creation fails. */
 #lagu .spotify-embed {
   position: relative;
   width: 100%;
-  height: 450px;
   min-height: 450px;
+  height: 450px;
 }
 
 #lagu .spotify-embed > iframe,
 #lagu .spotify-api-mount {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 450px;
   min-height: 450px;
   border: 0;
-  display: block;
-}
-
-#spotify-native-fallback,
-.spotify-api-mount {
-  position: absolute;
-  inset: 0;
 }
 
 #spotify-native-fallback {
-  z-index: 1;
+  display: block;
 }
 
-.spotify-api-mount {
-  z-index: 2;
+#spotify-api-mount {
+  display: block;
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-.spotify-api-mount[hidden] {
-  display: block;
-}
-
-.spotify-api-mount.is-api-active {
+#spotify-api-mount.is-api-active {
   opacity: 1;
   pointer-events: auto;
 }
