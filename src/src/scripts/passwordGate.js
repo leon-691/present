@@ -1,24 +1,26 @@
 import { burstConfetti } from "./confetti.js";
 
 /**
- * Menyalakan gerbang kata sandi berbasis PIN numerik.
- * onSuccess() dipanggil sekali saat kode benar.
+ * Gerbang PIN numerik.
+ * Reset dilakukan setiap kali halaman gerbang selesai ditampilkan lagi,
+ * sehingga kembali ke awal selalu memberi PIN kosong seperti sesi baru.
  */
 export function initPasswordGate({ password, wrongMessage, onSuccess, onFirstInput }) {
+  const scene = document.querySelector("#gerbang");
   const dotsEl = document.querySelector("[data-gate-dots]");
   const keypadEl = document.querySelector("[data-gate-keypad]");
   const messageEl = document.querySelector("[data-gate-message]");
 
-  if (!dotsEl || !keypadEl) return;
+  if (!scene || !dotsEl || !keypadEl) return;
 
   let input = "";
   let hasStarted = false;
+  let resetTimer = null;
   const length = password.length;
   const originalClue = messageEl?.textContent ?? "";
 
-  // Bangun titik indikator sebanyak panjang password
   dotsEl.innerHTML = Array.from({ length }, () =>
-    `<span class="keypad-dots__dot"></span>`
+    `<span class="keypad-dots__dot"></span>`,
   ).join("");
   const dots = [...dotsEl.querySelectorAll(".keypad-dots__dot")];
 
@@ -26,20 +28,30 @@ export function initPasswordGate({ password, wrongMessage, onSuccess, onFirstInp
     dots.forEach((dot, i) => dot.classList.toggle("is-filled", i < input.length));
   }
 
+  function resetGate() {
+    if (resetTimer) {
+      clearTimeout(resetTimer);
+      resetTimer = null;
+    }
+    input = "";
+    hasStarted = false;
+    dotsEl.classList.remove("is-error", "is-shaking");
+    if (messageEl) messageEl.textContent = originalClue;
+    renderDots();
+  }
+
   function shakeAndReset() {
-    dotsEl.classList.add("is-error");
-    dotsEl.classList.add("is-shaking");
+    dotsEl.classList.add("is-error", "is-shaking");
     if (messageEl) messageEl.textContent = wrongMessage;
-    setTimeout(() => {
-      dotsEl.classList.remove("is-shaking");
-      dotsEl.classList.remove("is-error");
-      if (messageEl) messageEl.textContent = originalClue;
-      input = "";
-      renderDots();
+    resetTimer = setTimeout(() => {
+      resetTimer = null;
+      resetGate();
     }, 450);
   }
 
   function handleKey(key) {
+    if (!scene.classList.contains("is-active")) return;
+
     if (!hasStarted) {
       hasStarted = true;
       onFirstInput?.();
@@ -58,6 +70,11 @@ export function initPasswordGate({ password, wrongMessage, onSuccess, onFirstInp
     if (input.length === length) {
       if (input === password) {
         burstConfetti(dotsEl);
+        // Kosongkan state segera. Kalau user kembali ke awal sebelum transisi
+        // selesai, PIN lama tetap tidak akan ikut terbawa.
+        input = "";
+        hasStarted = false;
+        renderDots();
         setTimeout(onSuccess, 500);
       } else {
         shakeAndReset();
@@ -71,9 +88,11 @@ export function initPasswordGate({ password, wrongMessage, onSuccess, onFirstInp
     handleKey(btn.dataset.key);
   });
 
-  // Dukungan keyboard fisik untuk aksesibilitas
   window.addEventListener("keydown", (e) => {
     if (/^[0-9]$/.test(e.key)) handleKey(e.key);
     if (e.key === "Backspace") handleKey("back");
   });
+
+  scene.addEventListener("view:settled", resetGate);
+  resetGate();
 }

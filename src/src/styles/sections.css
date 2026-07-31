@@ -722,3 +722,61 @@ html.motion-reduced .envelope-scene__paper {
   border: 0;
   border-radius: calc(var(--radius-md) - 4px);
 }
+
+/* --- Enhanced gift anticipation --- */
+.gift-box {
+  animation: gift-wobble-enhanced 2.7s ease-in-out infinite;
+}
+
+@keyframes gift-wobble-enhanced {
+  0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+  18% { transform: translateX(-5px) rotate(-4.5deg) scale(1.012); }
+  36% { transform: translateX(5px) rotate(4deg) scale(1.018); }
+  52% { transform: translateX(-3px) rotate(-2.8deg) scale(1.01); }
+  68% { transform: translateX(3px) rotate(2.4deg) scale(1.008); }
+  82% { transform: translateX(-1px) rotate(-1deg) scale(1.003); }
+}
+
+.gift-sparkles {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: min(92vw, 430px);
+  height: min(70vw, 310px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gift-spark {
+  position: absolute;
+  display: block;
+  font-family: Georgia, serif;
+  font-size: clamp(18px, 4vw, 28px);
+  line-height: 1;
+  color: var(--color-secondary);
+  text-shadow: 0 0 8px rgba(255, 255, 255, .9), 0 0 16px var(--glow-secondary);
+  opacity: 0;
+  transform: scale(.35) rotate(0deg);
+  animation: gift-spark-twinkle 2.2s ease-in-out infinite;
+}
+
+.gift-spark--1 { left: 13%; top: 42%; animation-delay: -.2s; }
+.gift-spark--2 { left: 28%; top: 12%; font-size: 20px; animation-delay: -.95s; }
+.gift-spark--3 { right: 15%; top: 31%; animation-delay: -.55s; }
+.gift-spark--4 { right: 28%; top: 68%; font-size: 19px; animation-delay: -1.35s; }
+.gift-spark--5 { left: 22%; top: 75%; font-size: 21px; animation-delay: -1.7s; }
+.gift-spark--6 { right: 8%; top: 63%; font-size: 17px; animation-delay: -2s; }
+
+@keyframes gift-spark-twinkle {
+  0%, 100% { opacity: 0; transform: scale(.35) rotate(-12deg); }
+  18% { opacity: .25; transform: scale(.7) rotate(0deg); }
+  35% { opacity: 1; transform: scale(1.15) rotate(10deg); }
+  52% { opacity: .45; transform: scale(.82) rotate(-4deg); }
+  70% { opacity: 0; transform: scale(.3) rotate(8deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gift-box { animation: none; }
+  .gift-spark { animation: none; opacity: .55; transform: scale(.8); }
+}
