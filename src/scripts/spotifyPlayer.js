@@ -8,6 +8,8 @@
  * This keeps the existing v4 page/music architecture intact while fixing the
  * previous two-player collision.
  */
+let controllerInitialized = false;
+
 export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   const mount = document.querySelector("#spotify-embed");
   if (!mount) return { pause: () => false, isReady: () => false };
