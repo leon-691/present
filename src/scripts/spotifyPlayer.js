@@ -26,7 +26,7 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   }
 
   let controller = null;
-  let ready = false;
+  let controllerCreated = false;
   let pendingPause = false;
   let initialized = false;
   let apiReadyHandler = null;
@@ -35,13 +35,14 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   function showNativeFallback() {
     fallback.hidden = false;
     fallback.removeAttribute("aria-hidden");
-
     apiMount.classList.remove("is-api-active");
     apiMount.setAttribute("aria-hidden", "true");
   }
 
   function showApiController() {
-    // The API controller is now the actual player the user interacts with.
+    // IMPORTANT: createController() replaces apiMount with the Spotify Embed.
+    // The API controller is therefore the only player that can be controlled
+    // by controller.pause() and emit playback events to this page.
     fallback.hidden = true;
     fallback.setAttribute("aria-hidden", "true");
 
@@ -51,15 +52,19 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   }
 
   function safePauseController() {
-    if (!controller || !ready) {
+    if (!controllerCreated || !controller) {
       pendingPause = true;
       return false;
     }
 
     try {
       controller.pause();
+      pendingPause = false;
       return true;
     } catch (err) {
+      // Keep the request pending in case Spotify's controller is still
+      // completing its internal initialization.
+      pendingPause = true;
       console.warn("[Spotify] controller.pause() failed:", err);
       return false;
     }
@@ -69,11 +74,10 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
     if (initialized || !IFrameAPI?.createController) return;
     initialized = true;
 
-    // Never use display:none for the API mount during initialization. Spotify
-    // needs a real layout box in which to construct its Embed.
+    // The mount must have a real size while Spotify creates its iframe.
     apiMount.hidden = false;
     apiMount.classList.remove("is-api-active");
-    apiMount.setAttribute("aria-hidden", "true");
+    apiMount.removeAttribute("aria-hidden");
 
     try {
       IFrameAPI.createController(
@@ -85,49 +89,57 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
         },
         (EmbedController) => {
           controller = EmbedController;
+          controllerCreated = true;
+
+          if (fallbackTimer) {
+            clearTimeout(fallbackTimer);
+            fallbackTimer = null;
+          }
+
+          // Do NOT wait for the separate `ready` event before showing the
+          // controller. Spotify's official API gives us the EmbedController
+          // in this callback and its own example immediately uses it. Waiting
+          // for `ready` here caused the native iframe to remain visible, so
+          // user interaction happened on a player that this controller could
+          // never control.
+          showApiController();
 
           controller.addListener("ready", () => {
-            ready = true;
-
-            if (fallbackTimer) {
-              clearTimeout(fallbackTimer);
-              fallbackTimer = null;
-            }
-
-            // Only now do we replace the fallback visually. From this point
-            // forward the visible Spotify player IS the API-owned player.
-            showApiController();
-
-            if (pendingPause) {
-              pendingPause = false;
-              safePauseController();
-            }
+            if (pendingPause) safePauseController();
           });
 
-          // This is the most direct event for Spotify starting playback.
           controller.addListener("playback_started", () => {
             onPlaybackStart?.();
           });
 
-          // Keep playback_update as a secondary signal. Some browser/embed
-          // combinations may report playback through this event first.
           controller.addListener("playback_update", (event) => {
             if (event?.data?.isPaused === false) {
               onPlaybackStart?.();
             }
           });
+
+          // A background-music click may have happened before the Spotify
+          // controller callback arrived. Apply that request now.
+          if (pendingPause) {
+            safePauseController();
+          }
         },
       );
     } catch (err) {
       initialized = false;
+      controller = null;
+      controllerCreated = false;
       showNativeFallback();
-      console.warn("[Spotify] IFrame API initialization failed; native player remains active.", err);
+      console.warn(
+        "[Spotify] IFrame API initialization failed; native player remains active.",
+        err,
+      );
     }
   }
 
-  // Spotify's official loader calls this global callback. main/index.html
-  // forwards the API object through a custom event so this module does not
-  // depend on script ordering.
+  // The official Spotify loader invokes this global callback. index.html
+  // forwards the API object through this event so initialization is safe even
+  // when the API script finishes loading before main.js.
   if (window.__spotifyIframeAPI) {
     createController(window.__spotifyIframeAPI);
   } else {
@@ -135,12 +147,14 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
     window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
   }
 
-  // Do NOT remove the native player just because the API is slow. This is
-  // only a timeout for the controller enhancement, never for the website.
+  // Fallback only if createController itself never becomes available. Once
+  // its callback has supplied a controller, the API player stays visible.
   fallbackTimer = setTimeout(() => {
-    if (!ready) {
+    if (!controllerCreated) {
       showNativeFallback();
-      console.warn("[Spotify] IFrame API did not become ready; native player remains active.");
+      console.warn(
+        "[Spotify] IFrame API did not create a controller; native player remains active.",
+      );
     }
 
     if (apiReadyHandler) {
@@ -149,12 +163,8 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
     }
   }, 12000);
 
-  function pause() {
-    return safePauseController();
-  }
-
   return {
-    pause,
-    isReady: () => ready,
+    pause: () => safePauseController(),
+    isReady: () => controllerCreated,
   };
 }
