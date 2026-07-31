@@ -180,11 +180,11 @@ export function initEnvelopeReveal() {
     if (isMotionReduced()) {
       revealPaper();
     } else {
-      // Sengaja lebih cepat dari durasi transisi amplop (420ms) supaya
-      // kertas mulai muncul SAAT amplop masih memudar (crossfade),
-      // bukan menunggu amplop benar-benar hilang dulu baru kertas
-      // muncul -- itu yang bikin terasa "dua animasi terpisah".
-      setTimeout(revealPaper, 200);
+      // Nyaris seketika (bukan menunggu) -- kertas harus mulai kelihatan
+      // TEPAT saat kedua separuh amplop mulai mengelupas, supaya terasa
+      // "sudah ada di dalam", bukan muncul belakangan setelah amplop
+      // hilang duluan.
+      setTimeout(revealPaper, 60);
     }
   }
 

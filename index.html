@@ -238,9 +238,17 @@
 
           <!-- Amplop -- elemen pertama yang dilihat & satu-satunya yang bisa
                diinteraksi di awal. Drag ke atas utk buka (tap/Enter jadi
-               fallback aksesibilitas, bukan cara utama). -->
+               fallback aksesibilitas, bukan cara utama). Dibelah jadi 2
+               "separuh" (clip-path kiri/kanan dari foto yang SAMA) supaya
+               saat commit, keduanya bisa mengelupas menjauh dari titik
+               segel spt amplop sungguhan terbuka -- bukan cuma memudar. -->
           <button class="envelope-scene__envelope" type="button" data-envelope aria-label="Tarik amplop ke atas untuk membuka suratnya">
-            <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            <span class="envelope-scene__half envelope-scene__half--left" aria-hidden="true">
+              <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            </span>
+            <span class="envelope-scene__half envelope-scene__half--right" aria-hidden="true">
+              <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            </span>
             <span class="envelope-scene__crack" aria-hidden="true"></span>
           </button>
 

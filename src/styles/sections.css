@@ -465,12 +465,17 @@ html.motion-reduced .gift-glow {
   transition-delay: 100ms;
 }
 
-/* --- Amplop --- */
+/* --- Amplop ---
+   Dibelah jadi 2 "separuh" (kiri/kanan, masing2 clip-path dari FOTO YANG
+   SAMA) supaya saat commit, keduanya bisa mengelupas menjauh dari titik
+   segel spt amplop sungguhan dibuka -- bukan cuma satu elemen memudar
+   di tempat (itu yang bikin terasa "menghilang", bukan "terbuka"). */
 .envelope-scene__envelope {
   position: absolute;
   left: 50%;
   top: 50%;
   width: min(74vw, 300px);
+  aspect-ratio: 735 / 490;
   border: none;
   padding: 0;
   background: none;
@@ -481,13 +486,28 @@ html.motion-reduced .gift-glow {
   cursor: grab;
 }
 
-.envelope-scene__envelope img {
+.envelope-scene__half {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transition: transform 640ms var(--ease-petal), opacity 520ms var(--ease-petal);
+}
+
+.envelope-scene__half img {
   display: block;
   width: 100%;
   height: auto;
   border-radius: 10px;
   box-shadow: 0 24px 50px -14px var(--color-shadow);
   pointer-events: none;
+}
+
+.envelope-scene__half--left {
+  clip-path: inset(0 50% 0 0);
+}
+
+.envelope-scene__half--right {
+  clip-path: inset(0 0 0 50%);
 }
 
 @keyframes envelope-bob {
@@ -502,45 +522,66 @@ html.motion-reduced .gift-glow {
   transition: none !important;
 }
 
+.envelope-scene__envelope.is-dragging .envelope-scene__half {
+  transition: none !important;
+}
+
 .envelope-scene__envelope:not(.is-dragging) {
   transition: transform 420ms var(--ease-petal), opacity 420ms var(--ease-petal);
 }
 
+/* Amplop sendiri berhenti bergoyang & tetap di tempat saat commit -- yang
+   BERGERAK adalah 2 separuhnya (di bawah), bukan seluruh tombolnya. */
 .envelope-scene__envelope.is-committed {
   animation: none;
-  transform: translate(-50%, -50%) translateY(-26px) scale(0.9) rotate(-2deg);
-  opacity: 0;
   pointer-events: none;
+}
+
+.envelope-scene__envelope.is-committed .envelope-scene__half--left {
+  transform: translate(-38%, -34%) rotate(-18deg);
+  opacity: 0;
+}
+
+.envelope-scene__envelope.is-committed .envelope-scene__half--right {
+  transform: translate(38%, -34%) rotate(18deg);
+  opacity: 0;
 }
 
 html.motion-reduced .envelope-scene__envelope {
   animation: none;
 }
 
-/* --- "Cap lilin retak" -- kilatan singkat tepat di posisi cap lilin asli
-   (diukur dari foto: ~45%,45%) saat amplop commit terbuka. Ini yang
-   menjual kesan "disegel lalu dibuka", bukan cuma amplop menghilang. */
+html.motion-reduced .envelope-scene__envelope.is-committed {
+  opacity: 0;
+}
+
+/* --- "Cap lilin retak" -- kilatan di posisi cap lilin asli (diukur dari
+   foto: ~45%,46%) SAAT amplop commit terbuka, tepat di titik yang sama
+   tempat kedua separuh amplop mulai mengelupas. Dibuat cukup besar &
+   kontras supaya jelas terlihat, bukan sekadar aksen halus. */
 .envelope-scene__crack {
   position: absolute;
   left: 45%;
   top: 46%;
-  width: 10px;
-  height: 10px;
+  width: 18px;
+  height: 18px;
   transform: translate(-50%, -50%) scale(0);
   border-radius: 50%;
-  background: radial-gradient(circle, #fff6dd 0%, var(--color-secondary) 45%, transparent 76%);
+  background: radial-gradient(circle, #fffaf0 0%, var(--color-secondary) 40%, transparent 72%);
+  box-shadow: 0 0 24px 6px rgba(255, 246, 221, 0.7);
   opacity: 0;
   pointer-events: none;
+  z-index: 1;
 }
 
 .envelope-scene__envelope.is-committed .envelope-scene__crack {
-  animation: seal-crack 550ms var(--ease-petal) forwards;
+  animation: seal-crack 620ms var(--ease-petal) forwards;
 }
 
 @keyframes seal-crack {
   0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  35% { transform: translate(-50%, -50%) scale(3.4); opacity: 0.95; }
-  100% { transform: translate(-50%, -50%) scale(6.5); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(4.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(9); opacity: 0; }
 }
 
 html.motion-reduced .envelope-scene__crack {
