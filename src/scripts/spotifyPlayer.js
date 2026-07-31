@@ -1,120 +1,105 @@
 /**
  * Spotify Embed controller.
  *
- * Primary path:
- *   Spotify iFrame API -> real playback events + controller.pause().
- *
- * Fallback path:
- *   normal Spotify iframe -> keeps the playlist visible even when the
- *   iFrame API is blocked/unavailable. Playback synchronization is only
- *   available on the API path because the Spotify iframe is cross-origin.
+ * IMPORTANT:
+ * Spotify's iFrame API creates/replaces the embed element with its own iframe.
+ * Therefore the HTML contains a plain mount <div>, not a pre-built iframe.
+ * The API is an enhancement: if it fails to load, the rest of the site keeps
+ * working, but cross-player pause synchronization cannot be guaranteed.
  */
-export function initSpotifyPlayer({ src, onPlaybackStart, onPlaybackStop } = {}) {
+export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   const mount = document.querySelector("#spotify-embed");
-  if (!mount || !src) {
-    return { pause: () => {}, isReady: () => false };
-  }
+  if (!mount) return { pause: () => false, isReady: () => false };
 
   let controller = null;
   let ready = false;
-  let fallbackTimer = null;
+  let pendingPause = false;
+  let apiReadyHandler = null;
 
-  const apiReady = new Promise((resolve) => {
-    const create = (IFrameAPI) => {
-      if (controller || !mount.isConnected || !IFrameAPI?.createController) return;
+  const normalizeUrl = (value) => {
+    try {
+      return new URL(value, window.location.href).toString();
+    } catch {
+      return value;
+    }
+  };
 
-      try {
-        IFrameAPI.createController(
-          mount,
-          {
-            width: "100%",
-            height: "450",
-            url: src,
-          },
-          (EmbedController) => {
-            if (!EmbedController) {
-              createFallback();
-              return;
-            }
+  const create = (IFrameAPI) => {
+    if (!IFrameAPI?.createController || controller) return;
 
-            controller = EmbedController;
-            ready = true;
-
-            EmbedController.addListener("playback_started", () => {
-              onPlaybackStart?.();
-            });
-
-            EmbedController.addListener("playback_update", (event) => {
-              if (event?.data?.isPaused) {
-                onPlaybackStop?.();
-              }
-            });
-
-            resolve(EmbedController);
-          }
-        );
-      } catch (error) {
-        console.warn("[Spotify] iFrame API gagal, memakai fallback iframe.", error);
-        createFallback();
-      }
+    const options = {
+      width: "100%",
+      height: "450",
+      url: normalizeUrl(src),
     };
 
-    function createFallback() {
-      if (controller || mount.querySelector("iframe")) return;
+    try {
+      IFrameAPI.createController(mount, options, (EmbedController) => {
+        controller = EmbedController;
 
-      const iframe = document.createElement("iframe");
-      iframe.src = src;
-      iframe.title = "Spotify playlist";
-      iframe.loading = "lazy";
-      iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-      iframe.style.width = "100%";
-      iframe.style.height = "450px";
-      iframe.style.minHeight = "400px";
-      iframe.style.border = "0";
-      iframe.style.display = "block";
-      iframe.style.borderRadius = "inherit";
+        controller.addListener("ready", () => {
+          ready = true;
+          if (pendingPause) {
+            pendingPause = false;
+            try {
+              controller.pause();
+            } catch (err) {
+              console.warn("Spotify pause gagal:", err);
+            }
+          }
+        });
 
-      mount.replaceChildren(iframe);
-      resolve(null);
+        controller.addListener("playback_started", () => {
+          onPlaybackStart?.();
+        });
+
+        // playback_update juga menangkap perubahan state yang tidak selalu
+        // menghasilkan playback_started, tetapi hanya bereaksi saat benar-benar
+        // mulai bermain agar tidak membuat loop pause.
+        controller.addListener("playback_update", (event) => {
+          if (event?.data?.isPaused === false) onPlaybackStart?.();
+        });
+      });
+    } catch (err) {
+      console.warn("Spotify IFrame API gagal membuat controller:", err);
     }
+  };
 
-    const handleApiReady = (event) => create(event.detail);
+  if (window.__spotifyIframeAPI) {
+    create(window.__spotifyIframeAPI);
+  } else {
+    apiReadyHandler = (event) => create(event.detail);
+    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
+  }
 
-    window.addEventListener(
-      "spotify-iframe-api-ready",
-      handleApiReady,
-      { once: true }
-    );
-
-    if (window.__spotifyIframeAPI) {
-      create(window.__spotifyIframeAPI);
+  // Safety timeout: jangan biarkan event listener hidup selamanya.
+  setTimeout(() => {
+    if (apiReadyHandler && !controller) {
+      window.removeEventListener("spotify-iframe-api-ready", apiReadyHandler);
+      apiReadyHandler = null;
+      console.warn("Spotify IFrame API tidak tersedia; player tetap dibiarkan aman.");
     }
+  }, 10000);
 
-    // Never leave the white song card empty if Spotify's API fails to load.
-    fallbackTimer = window.setTimeout(() => {
-      if (!controller && !mount.querySelector("iframe")) {
-        createFallback();
+  function pause() {
+    if (controller && ready) {
+      try {
+        controller.pause();
+        return true;
+      } catch (err) {
+        console.warn("Spotify pause gagal:", err);
+        return false;
       }
-    }, 5000);
-  });
-
-  apiReady.finally(() => {
-    if (fallbackTimer) {
-      clearTimeout(fallbackTimer);
-      fallbackTimer = null;
     }
-  });
+
+    // Background music bisa mulai sebelum Spotify controller selesai siap.
+    // Simpan permintaan pause dan jalankan segera setelah controller ready.
+    pendingPause = true;
+    return false;
+  }
 
   return {
-    pause() {
-      try {
-        controller?.pause();
-      } catch (error) {
-        console.warn("[Spotify] Tidak dapat menjeda player.", error);
-      }
-    },
-
+    pause,
     isReady: () => ready,
-    ready: apiReady,
   };
 }
