@@ -184,7 +184,15 @@
         <div class="song-frame">
           <span class="washi-tape" style="--tape-rotate: -4deg; --tape-left: 28%;" aria-hidden="true"></span>
           <span class="washi-tape washi-tape--right" style="--tape-rotate: 5deg; --tape-left: 72%;" aria-hidden="true"></span>
-          <div id="spotify-embed" class="spotify-embed" aria-label="Spotify playlist"></div>
+          <div id="spotify-embed" class="spotify-embed" aria-label="Spotify playlist">
+            <iframe
+              id="spotify-native-fallback"
+              src="https://open.spotify.com/embed/playlist/6Y4M4jypuf6qIMts8vKIlN"
+              width="100%" height="450" frameborder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy" title="Spotify playlist"></iframe>
+            <div id="spotify-api-mount" class="spotify-api-mount" aria-hidden="true"></div>
+          </div>
         </div>
         <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>
@@ -255,12 +263,13 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- Spotify IFrame API: optional enhancement for playback synchronization.
+       The native iframe above remains the safe fallback if the API cannot
+       load or initialize. -->
   <script>
     window.onSpotifyIframeApiReady = (IFrameAPI) => {
       window.__spotifyIframeAPI = IFrameAPI;
-      window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", {
-        detail: IFrameAPI,
-      }));
+      window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", { detail: IFrameAPI }));
     };
   </script>
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
