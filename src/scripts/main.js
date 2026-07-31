@@ -2,7 +2,7 @@ import { content } from "../data/content.js";
 import { initPasswordGate } from "./passwordGate.js";
 import { initConfirmStep } from "./confirmStep.js";
 import { initMusicPlayer } from "./musicPlayer.js";
-import { initSpotifyEmbed } from "./spotifyPlayer.js";
+import { initSpotifyPlayer } from "./spotifyPlayer.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
 import { initEnvelopeReveal } from "./envelopeReveal.js";
@@ -22,12 +22,6 @@ function populateStaticText() {
   document.querySelectorAll("[data-key]").forEach((el) => {
     const key = el.dataset.key;
     if (content[key] !== undefined) el.textContent = content[key];
-  });
-
-  // Elemen yang butuh nilai jadi atribut src (mis. iframe), bukan teks
-  document.querySelectorAll("[data-key-src]").forEach((el) => {
-    const key = el.dataset.keySrc;
-    if (content[key] !== undefined) el.src = content[key];
   });
 
   // Teks tahap-2 scene surat (setelah amplop dibuka, ganti jadi "tarik
@@ -163,6 +157,7 @@ function init() {
   // halaman ini tetap jalan normal, bukan mati total tanpa pesan.
   let pageFlow;
   let music;
+  let spotify;
 
   const steps = [
     // Harus jadi step PERTAMA: semua modul di bawah (confetti,
@@ -190,20 +185,12 @@ function init() {
         src: content.backgroundAudioSrc,
         title: content.backgroundAudioTitle,
         subtitle: content.backgroundAudioSubtitle,
+        onBeforePlay: () => spotify?.pause(),
       });
 
-      // Spotify Embed dan background music adalah dua sumber audio yang
-      // saling eksklusif. Saat Spotify mulai bermain, MP3 langsung dijeda.
-      // Sebaliknya, saat MP3 dimainkan lewat tombol musik, Spotify dijeda.
-      void initSpotifyEmbed({
-        url: content.spotifyEmbedSrc,
-        onPlaybackStart: (spotifyController) => {
-          music.pause();
-          music.setSpotifyController(spotifyController);
-        },
-        onReady: (spotifyController) => {
-          music.setSpotifyController(spotifyController);
-        },
+      spotify = initSpotifyPlayer({
+        src: content.spotifyEmbedSrc,
+        onPlaybackStart: () => music?.pause(),
       });
     }],
     // Kado adalah halaman PERTAMA yang dilihat pengguna -- ketukannya
