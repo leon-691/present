@@ -1,2 +1,0 @@
-Taruh file musik latar di sini dengan nama: lagu-latar.mp3
-(atau ubah nama file yang dirujuk di src/data/content.js)
