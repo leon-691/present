@@ -132,6 +132,11 @@ export function initPageFlow() {
 
   function goToStart() {
     activate(0);
+    // Explicit signal for stateful modules that must be reset immediately
+    // when the user chooses "Kembali ke Awal".
+    document.querySelector("#gerbang")?.dispatchEvent(
+      new CustomEvent("password:reset", { bubbles: true })
+    );
   }
 
   // Delegasi satu listener untuk semua tombol "lanjut" generik,

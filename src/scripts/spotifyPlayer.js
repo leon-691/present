@@ -1,18 +1,13 @@
 /**
- * Spotify synchronization controller.
- *
- * The Spotify IFrame API must own the exact Embed that the visitor plays.
- * There is deliberately only ONE Spotify player at a time. A native iframe
- * is created only as a fallback when the official IFrame API cannot load.
- *
- * This keeps the existing v4 page/music architecture intact while fixing the
- * previous two-player collision.
+ * Spotify IFrame API — exactly ONE player.
+ * The official API owns #spotify-embed; native iframe is only a fallback
+ * when the API cannot create the Embed.
  */
 export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   const mount = document.querySelector("#spotify-embed");
   if (!mount) return { pause: () => false, isReady: () => false };
 
-  const FALLBACK_SRC = (() => {
+  const EMBED_SRC = (() => {
     try {
       const url = new URL(src || "");
       url.search = "";
@@ -25,12 +20,11 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
   let controller = null;
   let ready = false;
   let pendingPause = false;
-  let initialized = false;
+  let creating = false;
   let fallbackShown = false;
-  let apiReadyHandler = null;
   let fallbackTimer = null;
 
-  function setPlayerSize(el) {
+  function size(el) {
     el.style.width = "100%";
     el.style.height = "450px";
     el.style.minHeight = "450px";
@@ -38,118 +32,83 @@ export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
     el.style.display = "block";
   }
 
-  function showNativeFallback() {
-    if (ready || fallbackShown || controller) return;
+  function clearFallbackTimer() {
+    if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+  }
+
+  function showFallback() {
+    if (controller || ready || fallbackShown || !EMBED_SRC) return;
     fallbackShown = true;
     mount.replaceChildren();
-
     const iframe = document.createElement("iframe");
     iframe.id = "spotify-native-fallback";
-    iframe.src = FALLBACK_SRC;
+    iframe.src = EMBED_SRC;
     iframe.title = "Spotify playlist";
     iframe.loading = "lazy";
     iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
     iframe.setAttribute("frameborder", "0");
-    setPlayerSize(iframe);
+    size(iframe);
     mount.appendChild(iframe);
   }
 
-  function cleanupFallbackTimer() {
-    if (fallbackTimer) {
-      clearTimeout(fallbackTimer);
-      fallbackTimer = null;
-    }
-  }
-
-  function create(IFrameAPI) {
-    if (!IFrameAPI?.createController || initialized || ready) return;
-    initialized = true;
-    fallbackShown = false;
-
-    // The API replaces this mount with the one and only controlled Embed.
-    // Do not create another iframe beside it.
+  function create(api) {
+    if (!api?.createController || controller || creating || fallbackShown) return;
+    creating = true;
     mount.replaceChildren();
 
     try {
-      IFrameAPI.createController(
+      api.createController(
         mount,
-        {
-          width: "100%",
-          height: "450",
-          url: FALLBACK_SRC,
-        },
+        { width: "100%", height: "450", url: EMBED_SRC },
         (EmbedController) => {
+          creating = false;
           controller = EmbedController;
+          clearFallbackTimer();
 
           controller.addListener("ready", () => {
             ready = true;
-            cleanupFallbackTimer();
-
             if (pendingPause) {
               pendingPause = false;
-              try {
-                controller.pause();
-              } catch (err) {
-                console.warn("[Spotify] queued pause failed:", err);
-              }
+              try { controller.pause(); } catch (err) { console.warn("[Spotify] queued pause failed", err); }
             }
           });
 
-          controller.addListener("playback_started", () => {
-            onPlaybackStart?.();
-          });
-
+          controller.addListener("playback_started", () => onPlaybackStart?.());
           controller.addListener("playback_update", (event) => {
-            if (event?.data?.isPaused === false) {
-              onPlaybackStart?.();
-            }
+            if (event?.data?.isPaused === false) onPlaybackStart?.();
           });
         },
       );
     } catch (err) {
-      initialized = false;
+      creating = false;
       controller = null;
       ready = false;
-      console.warn("[Spotify] IFrame API failed; using native fallback.", err);
-      showNativeFallback();
+      console.warn("[Spotify] IFrame API createController failed", err);
+      showFallback();
     }
   }
 
-  // Official API callback may have fired before this module ran, or may fire
-  // after it. Support both without loading the API a second time.
+  // Handles both cases: API loaded before this module, or after it.
   if (window.__spotifyIframeAPI) {
     create(window.__spotifyIframeAPI);
   } else {
-    apiReadyHandler = (event) => create(event.detail);
-    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
+    window.addEventListener("spotify-iframe-api-ready", (event) => create(event.detail), { once: true });
   }
 
-  // If the official API cannot load, the site still gets a usable Spotify
-  // player. Importantly, the fallback is created IN THE SAME MOUNT, so it can
-  // never coexist with an API-controlled player.
+  // Never leave the mount blank indefinitely. If the official API cannot
+  // initialize, the visitor still gets a usable Spotify embed.
   fallbackTimer = setTimeout(() => {
-    if (!ready && !controller) {
-      showNativeFallback();
-    }
-  }, 9000);
+    if (!controller && !ready) showFallback();
+  }, 6000);
 
   function pause() {
     if (controller && ready) {
-      try {
-        controller.pause();
-        return true;
-      } catch (err) {
-        console.warn("[Spotify] pause failed:", err);
-        return false;
-      }
+      try { controller.pause(); return true; }
+      catch (err) { console.warn("[Spotify] pause failed", err); return false; }
     }
-
     if (!fallbackShown) pendingPause = true;
     return false;
   }
 
-  return {
-    pause,
-    isReady: () => ready,
-  };
+  return { pause, isReady: () => ready };
 }
