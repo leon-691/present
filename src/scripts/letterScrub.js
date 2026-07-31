@@ -30,7 +30,6 @@ function initClosingSeal() {
 
     spawnPetalBurst(btn.getBoundingClientRect(), {
       flowerCount: 5,
-      ribbonCount: 4,
       distanceMin: 60,
       distanceMax: 170,
       angleCenter: -Math.PI / 2, // condong ke atas, spt tertiup pelan

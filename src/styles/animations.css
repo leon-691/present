@@ -224,7 +224,7 @@ html.tier-low .view--blur.is-leaving {
   }
 }
 
-/* --- Ledakan/hembusan bunga (FOTO ASLI)+pita, titik asal & jumlah
+/* --- Ledakan/hembusan bunga (FOTO ASLI), titik asal & jumlah
    partikel ditentukan saat pemanggilan (lihat petalBurst.js) -- dipakai
    utk 2 momen: kado terbuka (giftOpening.js, meledak ke segala arah,
    banyak & besar spy menutupi layar) & surat disegel (letterScrub.js,
@@ -251,10 +251,6 @@ html.tier-low .view--blur.is-leaving {
 .petal-burst__piece--photo {
   object-fit: contain;
   filter: drop-shadow(0 4px 10px var(--color-shadow));
-}
-
-.petal-burst__piece--ribbon {
-  border-radius: 3px;
 }
 
 @keyframes petal-burst-fly {

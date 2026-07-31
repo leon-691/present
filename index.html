@@ -166,9 +166,9 @@
            bulat kecil supaya tetap senada palet, bukan foto mentah. -->
       <section class="view view--sweep" id="transisi">
         <div class="transition-flowers motion-decorative" aria-hidden="true">
-          <img src="assets/images/bunga-1.jpg" alt="" width="360" height="360" />
+          <img src="assets/images/bunga-png/bunga-1.png" alt="" width="320" height="320" />
           <img class="sticker sticker--float" src="assets/stickers/sticker-read-slowly.webp" alt="" width="512" height="512" />
-          <img src="assets/images/bunga-2.jpg" alt="" width="360" height="360" />
+          <img src="assets/images/bunga-png/bunga-2.png" alt="" width="320" height="320" />
         </div>
         <p class="transition-text" data-key="transitionText">okayy last one...</p>
         <button class="btn" data-next data-key="continueLabel">klik ini &lt;3</button>
@@ -188,11 +188,12 @@
           <iframe
             data-key-src="spotifyEmbedSrc"
             title="Playlist Spotify"
-            style="height: 500px;"
+            style="height: 300px;"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
           ></iframe>
         </div>
+        <p class="section--song__note">Kalau player di atas kosong, ganti dulu link playlist-nya di <code>content.js</code>.</p>
         <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>
 
@@ -240,6 +241,7 @@
                fallback aksesibilitas, bukan cara utama). -->
           <button class="envelope-scene__envelope" type="button" data-envelope aria-label="Tarik amplop ke atas untuk membuka suratnya">
             <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            <span class="envelope-scene__crack" aria-hidden="true"></span>
           </button>
 
           <p class="envelope-scene__hint fade-up fade-up--delay-2" data-envelope-hint>

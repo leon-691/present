@@ -175,7 +175,7 @@
 
 /* --- Saat kado diketuk (lihat giftOpening.js) ---
    Tutup terbang ke atas & berputar, kotak sedikit "kempis" lalu pudar,
-   kotak berhenti bergoyang. Ledakan kelopak/pita ditangani lewat elemen
+   kotak berhenti bergoyang. Ledakan foto bunga ditangani lewat elemen
    terpisah (.petal-burst, di-generate JS lewat petalBurst.js), bukan di sini. */
 .gift-box.is-opening {
   animation: none;
@@ -343,8 +343,10 @@ html.motion-reduced .gift-glow {
 .transition-flowers img:not(.sticker) {
   width: 64px;
   height: 64px;
+  padding: 6px;
   border-radius: 50%;
-  object-fit: cover;
+  background: var(--color-blush);
+  object-fit: contain;
   box-shadow: 0 0 0 4px var(--color-surface), 0 0 0 5px var(--color-border), var(--shadow-pop);
 }
 
@@ -506,7 +508,7 @@ html.motion-reduced .gift-glow {
 
 .envelope-scene__envelope.is-committed {
   animation: none;
-  transform: translate(-50%, -50%) translateY(-220px) rotate(-7deg) scale(0.9);
+  transform: translate(-50%, -50%) translateY(-26px) scale(0.9) rotate(-2deg);
   opacity: 0;
   pointer-events: none;
 }
@@ -515,7 +517,41 @@ html.motion-reduced .envelope-scene__envelope {
   animation: none;
 }
 
-/* --- Kertas surat --- */
+/* --- "Cap lilin retak" -- kilatan singkat tepat di posisi cap lilin asli
+   (diukur dari foto: ~45%,45%) saat amplop commit terbuka. Ini yang
+   menjual kesan "disegel lalu dibuka", bukan cuma amplop menghilang. */
+.envelope-scene__crack {
+  position: absolute;
+  left: 45%;
+  top: 46%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6dd 0%, var(--color-secondary) 45%, transparent 76%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.envelope-scene__envelope.is-committed .envelope-scene__crack {
+  animation: seal-crack 550ms var(--ease-petal) forwards;
+}
+
+@keyframes seal-crack {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  35% { transform: translate(-50%, -50%) scale(3.4); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(6.5); opacity: 0; }
+}
+
+html.motion-reduced .envelope-scene__crack {
+  animation: none !important;
+  display: none;
+}
+
+/* --- Kertas surat ---
+   Posisi "tersembunyi" & "mengintip" SENGAJA dekat dgn titik pusat amplop
+   (bukan jauh di bawah) supaya terasa satu gerakan "muncul dari dalam
+   amplop", bukan dua animasi terpisah yg kebetulan berurutan. */
 .envelope-scene__paper {
   position: absolute;
   left: 50%;
@@ -524,15 +560,15 @@ html.motion-reduced .envelope-scene__envelope {
   height: min(66vh, 500px);
   z-index: 1;
   opacity: 0;
-  transform: translate(-50%, calc(-50% + 130px)) scale(0.46);
-  transition: transform 560ms var(--ease-petal), opacity 460ms var(--ease-petal);
+  transform: translate(-50%, -50%) translateY(46px) scale(0.5);
+  transition: transform 520ms var(--ease-petal), opacity 420ms var(--ease-petal);
   pointer-events: none;
   touch-action: none;
 }
 
 .envelope-scene__paper.is-peeking {
   opacity: 1;
-  transform: translate(-50%, calc(-50% + 88px)) scale(0.8);
+  transform: translate(-50%, -50%) translateY(30px) scale(0.8);
   pointer-events: auto;
   cursor: grab;
 }
@@ -543,6 +579,7 @@ html.motion-reduced .envelope-scene__envelope {
 }
 
 .envelope-scene__paper.is-final {
+  opacity: 1;
   transform: translate(-50%, -50%) scale(1);
   pointer-events: auto;
   touch-action: auto;

@@ -7,9 +7,9 @@ import { particleBudget } from "./deviceTier.js";
  * CSS -- keyframe `gift-wobble` di sections.css, jalan otomatis lewat
  * animation di .gift-box). Modul ini menangani:
  * 1. Interaksi ketuk/klik (sekali saja -- dijaga lewat flag `hasOpened`).
- * 2. Ledakan foto bunga asli + potongan pita dari titik kotak kado (lihat
- *    petalBurst.js -- modul yang sama dipakai lagi saat surat disegel),
- *    dibesarkan sampai menutupi layar.
+ * 2. Ledakan foto bunga asli dari titik kotak kado (lihat petalBurst.js --
+ *    modul yang sama dipakai lagi saat surat disegel), dibesarkan &
+ *    diperbanyak sampai menutupi layar.
  * 3. Sedikit "zoom" kamera pada seluruh halaman.
  * 4. Memberi tahu main.js kapan boleh unlock musik (segera, di titik
  *    ketuk -- gesture pertama pengguna) dan kapan boleh pindah ke halaman
@@ -66,18 +66,17 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
     const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
 
     spawnPetalBurst(trigger.getBoundingClientRect(), {
-      flowerCount: particleBudget({ low: 20, mid: 30, high: 42 }),
-      ribbonCount: particleBudget({ low: 10, mid: 16, high: 22 }),
-      distanceMin: diagonal * 0.18,
-      distanceMax: diagonal * 0.7,
+      flowerCount: particleBudget({ low: 34, mid: 50, high: 68 }),
+      distanceMin: diagonal * 0.08, // sebagian tetap dekat pusat, biar tidak ada "lubang" kosong di tengah
+      distanceMax: diagonal * 0.8,
       angleSpread: Math.PI * 2, // ledakan ke segala arah
-      sizeScale: 2.4, // foto asli, bukan ikon SVG kecil -- dibesarkan spy benar2 menutupi layar
-      lifetimeMs: 2200,
+      sizeScale: 3.4, // foto asli, bukan ikon SVG kecil -- dibesarkan spy benar2 menutupi layar
+      lifetimeMs: 2400,
     });
 
     setTimeout(() => {
       pageEl?.classList.remove("is-gift-zoom");
       onComplete?.();
-    }, 1550);
+    }, 1750);
   });
 }

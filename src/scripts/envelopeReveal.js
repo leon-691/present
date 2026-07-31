@@ -92,7 +92,7 @@ export function initEnvelopeReveal() {
   const ENV_MAX_DRAG = 200;
   const PAPER_THRESHOLD = 84;
   const PAPER_MAX_DRAG = 240;
-  const PEEK_Y = 88; // px, posisi "mengintip" sblm ditarik
+  const PEEK_Y = 30; // px, posisi "mengintip" sblm ditarik -- lihat sections.css
 
   const hintTextEl = hintEl?.querySelector("[data-key='envelopeHint']") ?? null;
   const hintDefaultText = hintTextEl?.textContent ?? "";
@@ -116,6 +116,8 @@ export function initEnvelopeReveal() {
 
     paperEl.classList.remove("is-peeking", "is-final", "is-dragging");
     paperEl.style.transform = "";
+    paperEl.setAttribute("role", "button");
+    paperEl.setAttribute("aria-label", "Tarik kertas surat ke atas untuk mengeluarkannya");
     paperEl.tabIndex = -1;
     contentEl.removeAttribute("tabindex");
 
@@ -178,9 +180,11 @@ export function initEnvelopeReveal() {
     if (isMotionReduced()) {
       revealPaper();
     } else {
-      envelope.addEventListener("transitionend", revealPaper, { once: true });
-      // Jaring pengaman kalau transitionend entah kenapa tidak terpicu.
-      setTimeout(revealPaper, 650);
+      // Sengaja lebih cepat dari durasi transisi amplop (420ms) supaya
+      // kertas mulai muncul SAAT amplop masih memudar (crossfade),
+      // bukan menunggu amplop benar-benar hilang dulu baru kertas
+      // muncul -- itu yang bikin terasa "dua animasi terpisah".
+      setTimeout(revealPaper, 200);
     }
   }
 

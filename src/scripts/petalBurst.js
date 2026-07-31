@@ -1,11 +1,17 @@
 /**
- * Ledakan/hembusan partikel bunga (FOTO ASLI, bukan SVG -- lihat FLOWER_PHOTOS
- * di bawah) + potongan pita dari satu titik asal. Dipakai di 2 momen berbeda
- * (parameter beda, keyframe & CSS sama -- lihat .petal-burst di animations.css):
- * - giftOpening.js: meledak ke segala arah, banyak partikel besar, sampai
+ * Ledakan/hembusan bunga (FOTO ASLI transparan, bukan SVG -- lihat
+ * FLOWER_PHOTOS di bawah) dari satu titik asal. Dipakai di 2 momen
+ * berbeda (parameter beda, keyframe & CSS sama -- lihat .petal-burst di
+ * animations.css):
+ * - giftOpening.js: meledak ke segala arah, banyak & besar, sampai
  *   menutupi layar (kado dibuka)
  * - letterScrub.js: lebih sedikit & condong satu arah, spt tertiup angin
- *   (surat disegel/ditutup)
+ *   (surat "disegel" saat kembali ke awal)
+ *
+ * TIDAK ADA lagi potongan pita/"confetti" -- dihapus atas permintaan,
+ * dinilai kurang pas dengan foto bunga asli. Kalau flowerCount lebih
+ * besar dari jumlah foto unik (21), foto-nya diputar ulang (duplikat) --
+ * itu memang disengaja, bukan bug.
  */
 
 const FLOWER_PHOTOS = Array.from(
@@ -13,10 +19,8 @@ const FLOWER_PHOTOS = Array.from(
   (_, i) => `assets/images/bunga-png/bunga-${i + 1}.png`
 );
 
-const RIBBON_COLORS = ["var(--color-secondary)", "var(--color-primary)"];
-
 /**
- * Kocok urutan foto (Fisher-Yates) supaya semua 11 foto kebagian tampil
+ * Kocok urutan foto (Fisher-Yates) supaya semua 21 foto kebagian tampil
  * merata sebelum ada yang berulang, bukan dipilih acak murni yang bisa
  * kebetulan sering muncul foto yang sama.
  */
@@ -32,8 +36,7 @@ function shuffledPhotoCycle() {
 /**
  * @param {DOMRect} originRect - elemen sumber ledakan (posisinya dipakai sbg titik tengah)
  * @param {object} [opts]
- * @param {number} [opts.flowerCount=12]
- * @param {number} [opts.ribbonCount=9]
+ * @param {number} [opts.flowerCount=16]
  * @param {number} [opts.distanceMin=140] - jarak minimum partikel terbang (px)
  * @param {number} [opts.distanceMax=360] - jarak maksimum partikel terbang (px)
  * @param {number} [opts.angleSpread=Math.PI*2] - rentang sudut terbang (radian) -- 2π = segala arah
@@ -43,8 +46,7 @@ function shuffledPhotoCycle() {
  */
 export function spawnPetalBurst(originRect, opts = {}) {
   const {
-    flowerCount = 12,
-    ribbonCount = 9,
+    flowerCount = 16,
     distanceMin = 140,
     distanceMax = 360,
     angleSpread = Math.PI * 2,
@@ -83,8 +85,6 @@ export function spawnPetalBurst(originRect, opts = {}) {
     el.style.animationDelay = `${delay}s`;
   }
 
-  // Foto asli (bukan ilustrasi SVG) -- dibulatkan spt medali pressed-flower,
-  // konsisten dgn .transition-flowers di halaman transisi.
   const photoCycle = shuffledPhotoCycle();
   for (let i = 0; i < flowerCount; i++) {
     const img = document.createElement("img");
@@ -93,16 +93,6 @@ export function spawnPetalBurst(originRect, opts = {}) {
     img.className = "petal-burst__piece petal-burst__piece--photo";
     place(img, (34 + Math.random() * 48) * sizeScale);
     container.appendChild(img);
-  }
-
-  for (let i = 0; i < ribbonCount; i++) {
-    const span = document.createElement("span");
-    span.className = "petal-burst__piece petal-burst__piece--ribbon";
-    span.style.background = RIBBON_COLORS[i % RIBBON_COLORS.length];
-    const size = (6 + Math.random() * 4) * sizeScale;
-    place(span, size);
-    span.style.height = `${size * 4.5}px`; // strip pita: lebih panjang dari lebar
-    container.appendChild(span);
   }
 
   document.body.appendChild(container);
