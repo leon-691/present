@@ -72,13 +72,13 @@
            sendiri -- lihat main.js. -->
       <section class="view view--gift is-active" id="opening">
         <div class="gift-glow motion-decorative" aria-hidden="true"></div>
-        <div class="gift-sparks motion-decorative" aria-hidden="true">
-          <span class="gift-spark gift-spark--1"></span>
-          <span class="gift-spark gift-spark--2"></span>
-          <span class="gift-spark gift-spark--3"></span>
-          <span class="gift-spark gift-spark--4"></span>
-          <span class="gift-spark gift-spark--5"></span>
-          <span class="gift-spark gift-spark--6"></span>
+        <div class="gift-sparkles motion-decorative" aria-hidden="true">
+          <span class="gift-spark gift-spark--1">✦</span>
+          <span class="gift-spark gift-spark--2">✧</span>
+          <span class="gift-spark gift-spark--3">✦</span>
+          <span class="gift-spark gift-spark--4">✧</span>
+          <span class="gift-spark gift-spark--5">✦</span>
+          <span class="gift-spark gift-spark--6">✧</span>
         </div>
         <button class="gift-box" type="button" data-gift-trigger aria-label="Ketuk untuk membuka kado">
           <span class="gift-box__shadow" aria-hidden="true"></span>
@@ -264,6 +264,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
+    // Official Spotify iFrame API callback. Keep this global callback defined
+    // before the async API script is loaded.
     window.onSpotifyIframeApiReady = (IFrameAPI) => {
       window.__spotifyIframeAPI = IFrameAPI;
       window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", { detail: IFrameAPI }));
