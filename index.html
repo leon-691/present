@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Untuk Adik</title>
+  <meta name="description" content="Sebuah kejutan kecil, dibuat khusus untukmu." />
+
+  <!-- Ini kado pribadi, bukan halaman publik -- jangan sampai terindeks
+       mesin pencari atau muncul di hasil pencarian orang lain. -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Supaya saat link ini dibagikan lewat WhatsApp/Instagram, preview-nya
+       rapi -- tanpa membocorkan isi kejutannya. -->
+  <meta property="og:title" content="Untuk Adik" />
+  <meta property="og:description" content="Sebuah kejutan kecil, dibuat khusus untukmu." />
+  <meta property="og:type" content="website" />
+
+  <meta name="theme-color" content="#A84A63" />
+  <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <!-- Favicon: bunga kecil, senada identitas baru (mascot sudah dihapus) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23E3A6B1'%3E%3Cellipse cx='50' cy='28' rx='16' ry='24'/%3E%3Cellipse cx='50' cy='28' rx='16' ry='24' transform='rotate(72 50 50)'/%3E%3Cellipse cx='50' cy='28' rx='16' ry='24' transform='rotate(144 50 50)'/%3E%3Cellipse cx='50' cy='28' rx='16' ry='24' transform='rotate(216 50 50)'/%3E%3Cellipse cx='50' cy='28' rx='16' ry='24' transform='rotate(288 50 50)'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23D3A354'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&family=Caveat:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="src/styles/variables.css" />
+  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/components.css" />
+  <link rel="stylesheet" href="src/styles/sections.css" />
+  <link rel="stylesheet" href="src/styles/animations.css" />
+</head>
+<body>
+
+  <!-- Progress halaman & pil musik -- persisten di semua halaman -->
+  <div class="page-progress" data-page-progress aria-hidden="true"></div>
+
+  <div class="music-pill is-paused" data-music-pill>
+    <button class="music-pill__toggle" data-music-toggle aria-pressed="false" aria-label="Putar/jeda musik latar">▶</button>
+    <div class="music-pill__meta">
+      <div class="music-pill__title" data-music-title>Judul lagu</div>
+      <div class="music-pill__subtitle" data-music-subtitle>lagu latar</div>
+    </div>
+    <div class="music-pill__bars motion-decorative" aria-hidden="true"><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- Tombol kecil override preferensi motion (lihat motionPreference.js
+       & catatan di README soal kenapa ini penting untuk Android) -->
+  <button class="motion-toggle" type="button" data-motion-toggle aria-label="Ganti mode efek visual">
+    <span aria-hidden="true">✨</span>
+  </button>
+
+  <div class="page-backdrop">
+    <div class="atmosphere" data-atmosphere aria-hidden="true">
+      <div class="atmosphere__mesh"></div>
+      <div class="atmosphere__glow"></div>
+      <div class="atmosphere__noise"></div>
+    </div>
+    <main class="page">
+
+      <!-- 0. OPENING -- kado yang menunggu diketuk. Halaman PALING PERTAMA
+           (is-active dari awal); pageFlow.js mendeteksi urutan otomatis dari
+           posisi .view di DOM, jadi tidak perlu ubah pageFlow.js sama sekali.
+           Setelah animasi buka selesai, giftOpening.js memanggil pageFlow.next()
+           sendiri -- lihat main.js. -->
+      <section class="view view--gift is-active" id="opening">
+        <div class="gift-glow motion-decorative" aria-hidden="true"></div>
+        <button class="gift-box" type="button" data-gift-trigger aria-label="Ketuk untuk membuka kado">
+          <span class="gift-box__shadow" aria-hidden="true"></span>
+          <span class="gift-box__body" aria-hidden="true">
+            <span class="gift-box__ribbon-v"></span>
+            <span class="gift-box__ribbon-h"></span>
+          </span>
+          <span class="gift-box__lid" aria-hidden="true">
+            <span class="gift-box__ribbon-v"></span>
+            <span class="gift-box__bow">
+              <span class="gift-box__bow-loop gift-box__bow-loop--left"></span>
+              <span class="gift-box__bow-loop gift-box__bow-loop--right"></span>
+              <span class="gift-box__bow-knot"></span>
+            </span>
+          </span>
+        </button>
+        <p class="gift-label" data-opening-label aria-hidden="true">For Indah</p>
+        <p class="gift-hint fade-up fade-up--delay-2" data-key="openingHint">ketuk kadonya, yuk</p>
+      </section>
+
+      <!-- 1. GERBANG KATA SANDI -->
+      <section class="view" id="gerbang">
+        <img class="sticker sticker--float motion-decorative pop-in" src="assets/stickers/sticker-password.webp" alt="" aria-hidden="true" width="512" height="512" />
+        <h1 class="fade-up fade-up--delay-1" data-key="gateSubtitle">coba tebak kodenya</h1>
+        <div class="keypad-dots fade-up fade-up--delay-2" data-gate-dots></div>
+        <div class="keypad fade-up fade-up--delay-2" data-gate-keypad>
+          <button class="keypad__key" data-key="1">1</button>
+          <button class="keypad__key" data-key="2">2</button>
+          <button class="keypad__key" data-key="3">3</button>
+          <button class="keypad__key" data-key="4">4</button>
+          <button class="keypad__key" data-key="5">5</button>
+          <button class="keypad__key" data-key="6">6</button>
+          <button class="keypad__key" data-key="7">7</button>
+          <button class="keypad__key" data-key="8">8</button>
+          <button class="keypad__key" data-key="9">9</button>
+          <span class="keypad__spacer" aria-hidden="true"></span>
+          <button class="keypad__key" data-key="0">0</button>
+          <button class="keypad__key keypad__key--action" data-key="back" aria-label="Hapus">⌫</button>
+        </div>
+        <p class="hint-text fade-up fade-up--delay-3" data-gate-message data-key="passwordClue" aria-live="polite" aria-atomic="true">petunjuk</p>
+      </section>
+
+      <!-- 2. SAPAAN -->
+      <section class="view view--sweep" id="sapaan">
+        <img class="sticker sticker--float motion-decorative" src="assets/stickers/sticker-hi.webp" alt="" aria-hidden="true" width="512" height="512" />
+        <h1 data-key="greetingText">hai!</h1>
+        <button class="btn" data-next data-key="greetingButton">lanjut</button>
+      </section>
+
+      <!-- 3. KONFIRMASI (yes/no + reaksi lucu kalau pilih "noo") -->
+      <section class="view view--mask" id="konfirmasi">
+        <div data-confirm-question>
+          <img class="sticker sticker--float motion-decorative" src="assets/stickers/sticker-ready.webp" alt="" aria-hidden="true" width="512" height="512" />
+          <h2 data-key="confirmQuestion">udah siap buka kejutannya?</h2>
+          <div class="confirm-actions">
+            <button class="btn" data-confirm-yes data-key="confirmYes">udah siap</button>
+            <button class="btn btn--ghost" data-confirm-no data-key="confirmNo">belum siap</button>
+          </div>
+        </div>
+        <div data-confirm-reaction hidden>
+          <img class="sticker is-shaking" src="assets/stickers/sticker-no.webp" alt="" aria-hidden="true" width="512" height="512" />
+          <h2 data-key="confirmReactionText">yaah, padahal udah aku siapin</h2>
+          <button class="btn btn--ghost" data-confirm-back data-key="confirmReactionButton">oke, siap sekarang</button>
+        </div>
+      </section>
+
+      <!-- 4. REVEAL UMUR -->
+      <section class="view view--blur" id="reveal">
+        <p class="eyebrow" data-key="revealPrefix">today, you turn</p>
+        <div class="reveal-tag">
+          <span class="reveal-tag__loop" aria-hidden="true"></span>
+          <div class="reveal-tag__card">
+            <span class="reveal-tag__hole" aria-hidden="true"></span>
+            <div class="reveal-number" data-reveal-number>16</div>
+          </div>
+        </div>
+        <h2 data-key="revealSuffix">happy birthday!!</h2>
+        <button class="btn" data-next data-key="revealButton">open it &lt;3</button>
+      </section>
+
+      <!-- 5. PESAN UTAMA -->
+      <section class="view" id="pesan-utama">
+        <div class="card">
+          <h2 data-key="mainMessageTitle">happy birthday</h2>
+          <p data-key="mainMessageBody">Pesan hangat ada di sini.</p>
+        </div>
+        <button class="btn" data-next data-key="mainMessageButton">i have something for you</button>
+      </section>
+
+      <!-- 6. TRANSISI -- salah satu dari 3 titik bunga BOLEH tampil sbg
+           aksen (opening/transisi/ending), lihat catatan di sections.css.
+           Foto bunga asli (bukan ilustrasi SVG), diproses jadi medali
+           bulat kecil supaya tetap senada palet, bukan foto mentah. -->
+      <section class="view view--sweep" id="transisi">
+        <div class="transition-flowers motion-decorative" aria-hidden="true">
+          <img src="assets/images/bunga-png/bunga-1.png" alt="" width="320" height="320" />
+          <img class="sticker sticker--float" src="assets/stickers/sticker-read-slowly.webp" alt="" width="512" height="512" />
+          <img src="assets/images/bunga-png/bunga-2.png" alt="" width="320" height="320" />
+        </div>
+        <p class="transition-text" data-key="transitionText">okayy last one...</p>
+        <button class="btn" data-next data-key="continueLabel">klik ini &lt;3</button>
+      </section>
+
+      <!-- 7. KENANGAN -- dibuat JS, satu halaman per foto+kalimat,
+           persis referensi (bukan grid foto terpisah dari teks) -->
+      <div data-memory-pages></div>
+
+      <!-- 8. LAGU KENANGAN -->
+      <section class="view view--blur" id="lagu">
+        <h2 data-key="songTitle">lagu-lagu buat kamu</h2>
+        <div class="song-frame">
+          <span class="washi-tape" style="--tape-rotate: -4deg; --tape-left: 28%;" aria-hidden="true"></span>
+          <span class="washi-tape washi-tape--right" style="--tape-rotate: 5deg; --tape-left: 72%;" aria-hidden="true"></span>
+          <div id="spotify-embed" class="spotify-embed" aria-label="Spotify playlist"></div>
+        </div>
+        <button class="btn" data-next data-key="continueLabel">lanjut</button>
+      </section>
+
+      <!-- 9. SURAT -- ending scene, momen paling penting. Amplop di-drag
+           ke atas utk dibuka, lalu kertas surat di dalamnya di-drag lagi
+           utk ditarik keluar; isi surat (statis, tanpa efek ketik/sorot
+           baca) baru tampil setelah kertas keluar penuh. Semua logic
+           drag & reset-nya ada di envelopeReveal.js. -->
+      <section class="view view--mask section--letter" id="surat">
+        <div class="letter-glow motion-decorative" aria-hidden="true"></div>
+
+        <div class="envelope-scene" data-envelope-scene>
+          <!-- Dekorasi murni dari asset-surat yang Anda kirim, tidak dicampur
+               dengan bunga generik lain. Disebar mengelilingi amplop. -->
+          <div class="envelope-scene__decor motion-decorative" aria-hidden="true">
+            <img src="assets/images/surat/deco-1.png" alt="" style="--dx:8%; --dy:14%; --dsize:88px; --drot:-12deg;" />
+            <img src="assets/images/surat/deco-5.png" alt="" style="--dx:87%; --dy:10%; --dsize:72px; --drot:14deg;" />
+            <img src="assets/images/surat/deco-6.png" alt="" style="--dx:4%; --dy:46%; --dsize:70px; --drot:9deg;" />
+            <img src="assets/images/surat/deco-8.png" alt="" style="--dx:93%; --dy:40%; --dsize:82px; --drot:-10deg;" />
+            <img src="assets/images/surat/deco-9.png" alt="" style="--dx:10%; --dy:80%; --dsize:92px; --drot:6deg;" />
+            <img src="assets/images/surat/deco-11.png" alt="" style="--dx:90%; --dy:78%; --dsize:86px; --drot:-7deg;" />
+            <img src="assets/images/surat/deco-13.png" alt="" style="--dx:50%; --dy:5%; --dsize:64px; --drot:0deg;" />
+            <img src="assets/images/surat/deco-17.png" alt="" style="--dx:22%; --dy:93%; --dsize:60px; --drot:12deg;" />
+            <img src="assets/images/surat/deco-18.png" alt="" style="--dx:78%; --dy:92%; --dsize:66px; --drot:-9deg;" />
+            <img src="assets/images/surat/deco-19.png" alt="" style="--dx:50%; --dy:97%; --dsize:54px; --drot:4deg;" />
+          </div>
+
+          <!-- Kertas surat -- diam di belakang amplop, baru bisa ditarik
+               setelah amplop "terbuka" (lihat envelopeReveal.js). Isi surat
+               (data-letter-content) sengaja hidden sampai kertas BENAR-BENAR
+               tertarik keluar penuh. -->
+          <div class="envelope-scene__paper" data-letter-paper role="button" tabindex="-1" aria-label="Tarik kertas surat ke atas untuk mengeluarkannya">
+            <div class="envelope-scene__paper-bg" aria-hidden="true">
+              <img src="assets/images/surat/kertas-surat.png" alt="" draggable="false" />
+            </div>
+            <div class="envelope-scene__paper-content" data-letter-content data-scroll-container hidden>
+              <h2 class="letter-heading" data-key="letterHeading">selamat ulang tahun ya</h2>
+              <div class="letter-body" data-letter-body></div>
+              <button class="btn" data-go-start data-key="closingButton">kembali ke awal</button>
+            </div>
+          </div>
+
+          <!-- Amplop -- elemen pertama yang dilihat & satu-satunya yang bisa
+               diinteraksi di awal. Drag ke atas utk buka (tap/Enter jadi
+               fallback aksesibilitas, bukan cara utama). Dibelah jadi 2
+               "separuh" (clip-path kiri/kanan dari foto yang SAMA) supaya
+               saat commit, keduanya bisa mengelupas menjauh dari titik
+               segel spt amplop sungguhan terbuka -- bukan cuma memudar. -->
+          <button class="envelope-scene__envelope" type="button" data-envelope aria-label="Tarik amplop ke atas untuk membuka suratnya">
+            <span class="envelope-scene__half envelope-scene__half--left" aria-hidden="true">
+              <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            </span>
+            <span class="envelope-scene__half envelope-scene__half--right" aria-hidden="true">
+              <img src="assets/images/surat/surat.png" alt="" draggable="false" />
+            </span>
+            <span class="envelope-scene__crack" aria-hidden="true"></span>
+          </button>
+
+          <p class="envelope-scene__hint fade-up fade-up--delay-2" data-envelope-hint>
+            <span class="envelope-scene__hint-arrow motion-decorative" aria-hidden="true">&uarr;</span>
+            <span data-key="envelopeHint">tarik amplopnya ke atas</span>
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      window.__spotifyIframeAPI = IFrameAPI;
+      window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", { detail: IFrameAPI }));
+    };
+  </script>
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script type="module" src="src/scripts/main.js"></script>
+
+</body>
+</html>
