@@ -58,70 +58,10 @@
   outline-offset: 8px;
 }
 
-.gift-sparkles {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  transition: opacity 260ms ease, transform 260ms ease;
-}
-
-.gift-spark {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  transform: translate(-50%, -50%) scale(var(--spark-scale, 1));
-  opacity: 0.35;
-  animation: gift-spark-twinkle 1.9s ease-in-out infinite;
-  filter: drop-shadow(0 0 7px rgba(255, 226, 150, 0.8));
-}
-
-.gift-spark::before,
-.gift-spark::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 100%;
-  height: 3px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(255, 245, 194, 0.98), transparent);
-  transform: translate(-50%, -50%);
-}
-
-.gift-spark::after {
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(180deg, transparent, rgba(255, 245, 194, 0.98), transparent);
-}
-
-.gift-spark:nth-child(3n) {
-  width: 24px;
-  height: 24px;
-}
-
-.gift-spark:nth-child(2n) {
-  transform: translate(-50%, -50%) rotate(45deg) scale(var(--spark-scale, 1));
-}
-
-@keyframes gift-spark-twinkle {
-  0%, 100% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.55); }
-  35% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.05); }
-  55% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
-}
-
-.gift-sparkles.is-opening {
-  opacity: 0;
-  transform: scale(1.25);
-}
-
-
 @keyframes gift-wobble {
-  0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
-  18% { transform: translateX(-7px) rotate(-4.5deg) scale(1.01); }
-  38% { transform: translateX(6px) rotate(4deg) scale(1.015); }
-  58% { transform: translateX(-5px) rotate(-3.5deg) scale(1.01); }
-  78% { transform: translateX(4px) rotate(2.8deg) scale(1.008); }
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(-3.5deg) scale(1.015); }
+  75% { transform: rotate(2.5deg) scale(1.01); }
 }
 
 .gift-box__shadow {
@@ -233,6 +173,89 @@
   font-size: var(--fs-sm);
 }
 
+
+/* --- Sparkle field kado --- */
+.gift-spark-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gift-spark {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%) scale(var(--spark-scale, 1));
+  opacity: 0;
+  filter: drop-shadow(0 0 7px var(--glow-secondary));
+  animation: gift-spark-twinkle 1.9s ease-in-out infinite;
+}
+
+.gift-spark::before,
+.gift-spark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-secondary);
+  transform: translate(-50%, -50%);
+}
+
+.gift-spark::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.gift-spark-field::before,
+.gift-spark-field::after {
+  content: "✦";
+  position: absolute;
+  color: var(--color-primary);
+  font-size: 24px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px var(--glow-primary));
+  animation: gift-spark-star 2.4s ease-in-out infinite;
+}
+
+.gift-spark-field::before { left: 22%; top: 37%; }
+.gift-spark-field::after { right: 19%; top: 55%; animation-delay: 900ms; }
+
+@keyframes gift-spark-twinkle {
+  0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(calc(var(--spark-scale, 1) * .55)); }
+  35% { opacity: .9; }
+  55% { opacity: 1; transform: translate(-50%, -50%) scale(var(--spark-scale, 1)); }
+  75% { opacity: .25; }
+}
+
+@keyframes gift-spark-star {
+  0%, 100% { opacity: 0; transform: scale(.65) rotate(0deg); }
+  35% { opacity: .75; }
+  55% { opacity: 1; transform: scale(1.05) rotate(12deg); }
+  80% { opacity: .15; }
+}
+
+.gift-box {
+  z-index: 2;
+  animation: gift-wobble-enhanced 2.7s ease-in-out infinite;
+}
+
+@keyframes gift-wobble-enhanced {
+  0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+  18% { transform: translateX(-7px) rotate(-3.8deg) scale(1.012); }
+  36% { transform: translateX(6px) rotate(3.5deg) scale(1.018); }
+  54% { transform: translateX(-4px) rotate(-2.4deg) scale(1.008); }
+  72% { transform: translateX(3px) rotate(1.8deg) scale(1.004); }
+}
+
+.gift-box.is-opening { animation: none; }
+.gift-spark-field.is-opening { opacity: 0; transition: opacity 260ms ease; }
+
+html.motion-reduced .gift-spark-field,
+html.motion-reduced .gift-spark { animation: none; opacity: 0; }
+
 /* --- Saat kado diketuk (lihat giftOpening.js) ---
    Tutup terbang ke atas & berputar, kotak sedikit "kempis" lalu pudar,
    kotak berhenti bergoyang. Ledakan foto bunga ditangani lewat elemen
@@ -268,13 +291,6 @@ html.motion-reduced .gift-box {
 }
 html.motion-reduced .gift-glow {
   animation: none;
-}
-html.motion-reduced .gift-sparkles {
-  animation: none;
-}
-html.motion-reduced .gift-spark {
-  animation: none;
-  opacity: 0.65;
 }
 
 /* --- 1. Gerbang (password) -- judulnya h1, halaman kedua --- */

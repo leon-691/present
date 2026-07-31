@@ -30,36 +30,32 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
 
   let hasOpened = false;
 
-  // Decorative sparkles are created once and kept outside the gift button so
-  // they never interfere with the existing gift hit-area or its contents.
-  let sparkleLayer = scene.querySelector("[data-gift-sparkles]");
-  if (!sparkleLayer) {
-    sparkleLayer = document.createElement("div");
-    sparkleLayer.className = "gift-sparkles";
-    sparkleLayer.dataset.giftSparkles = "";
-    sparkleLayer.setAttribute("aria-hidden", "true");
-    const sparklePositions = [
-      ["18%", "38%", "0.1s", "0.9"], ["76%", "34%", "0.45s", "0.75"],
-      ["27%", "55%", "0.75s", "0.7"], ["72%", "58%", "1.05s", "0.85"],
-      ["39%", "25%", "1.3s", "0.65"], ["61%", "25%", "1.65s", "0.8"],
-      ["35%", "72%", "1.95s", "0.7"], ["66%", "72%", "2.25s", "0.75"]
-    ];
-    sparklePositions.forEach(([left, top, delay, scale]) => {
-      const spark = document.createElement("span");
-      spark.className = "gift-spark";
-      spark.style.left = left;
-      spark.style.top = top;
-      spark.style.animationDelay = delay;
-      spark.style.setProperty("--spark-scale", scale);
-      sparkleLayer.appendChild(spark);
-    });
-    scene.appendChild(sparkleLayer);
-  }
+  // Decorative sparkles are generated once so they do not alter the gift
+  // contents or its interaction logic.
+  const sparkleField = document.createElement("div");
+  sparkleField.className = "gift-spark-field motion-decorative";
+  sparkleField.setAttribute("aria-hidden", "true");
+  const sparkleData = [
+    ["10%", "28%", "1.1", "0ms"], ["18%", "62%", "0.8", "420ms"],
+    ["28%", "20%", "1.35", "760ms"], ["72%", "18%", "0.9", "180ms"],
+    ["83%", "38%", "1.3", "620ms"], ["77%", "67%", "0.75", "980ms"],
+    ["61%", "78%", "1.05", "320ms"], ["35%", "82%", "0.85", "860ms"],
+  ];
+  sparkleData.forEach(([x, y, scale, delay]) => {
+    const spark = document.createElement("span");
+    spark.className = "gift-spark";
+    spark.style.left = x;
+    spark.style.top = y;
+    spark.style.setProperty("--spark-scale", scale);
+    spark.style.animationDelay = delay;
+    sparkleField.appendChild(spark);
+  });
+  scene.insertBefore(sparkleField, scene.firstChild);
 
   function resetGift() {
     hasOpened = false;
     trigger.classList.remove("is-opening");
-    sparkleLayer?.classList.remove("is-opening");
+    sparkleField.classList.remove("is-opening");
     trigger.removeAttribute("aria-disabled");
   }
 
@@ -85,7 +81,7 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
     }
 
     trigger.classList.add("is-opening");
-    sparkleLayer?.classList.add("is-opening");
+    sparkleField.classList.add("is-opening");
     pageEl?.classList.add("is-gift-zoom");
 
     // Jarak partikel dihitung dari diagonal layar (bukan angka piksel
