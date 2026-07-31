@@ -711,10 +711,18 @@ html.motion-reduced .envelope-scene__paper {
 #lagu .spotify-api-mount { width: 100%; height: 450px; min-height: 450px; border: 0; display: block; }
 #lagu .spotify-api-mount[hidden] { display: none; }
 
-
-/* Controller visibility safety override */
-.spotify-api-mount {
-  position: relative; width: 100%; height: 450px; opacity: 0; pointer-events: none; overflow: hidden;
+/* Spotify: one controller mount, fixed requested height. */
+.spotify-embed {
+  width: 100%;
+  min-height: 450px;
+  height: 450px;
+  overflow: hidden;
 }
-.spotify-api-mount.is-api-active { opacity: 1; pointer-events: auto; }
-#spotify-native-fallback { display:block; width:100%; height:450px; border:0; }
+
+.spotify-embed iframe {
+  display: block;
+  width: 100%;
+  height: 450px;
+  min-height: 450px;
+  border: 0;
+}

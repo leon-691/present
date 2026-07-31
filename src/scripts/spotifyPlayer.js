@@ -1,134 +1,151 @@
 /**
- * Spotify synchronization controller.
+ * Spotify iFrame API controller.
  *
- * IMPORTANT: Spotify's IFrame API controller must own the Embed iframe that
- * the user actually interacts with. A separate hidden controller cannot
- * observe/control the native fallback iframe. We therefore use the native
- * iframe only as a temporary fallback while the API controller initializes.
+ * Important architecture:
+ * - There is ONE Spotify Embed only.
+ * - The official IFrame API creates that Embed by replacing #spotify-embed.
+ * - We never keep a second native iframe alive beside the controller.
+ * - If the API cannot initialize, we restore a normal native iframe into the
+ *   same mount so Spotify still works instead of leaving an empty box.
  *
- * If the API fails, the native iframe stays visible and the rest of the site
- * keeps working. If the API succeeds, the API-owned iframe replaces the
- * fallback and becomes the single source of Spotify playback events.
+ * Synchronization:
+ * - background music -> controller.pause()
+ * - Spotify playback_started/playback_update -> onPlaybackStart()
  */
 export function initSpotifyPlayer({ src, onPlaybackStart } = {}) {
-  const fallback = document.querySelector("#spotify-native-fallback");
-  const apiMount = document.querySelector("#spotify-api-mount");
-  if (!fallback || !apiMount) {
+  const mount = document.querySelector("#spotify-embed");
+  if (!mount || !src) {
     return { pause: () => false, isReady: () => false };
   }
 
+  const fallbackSrc = normalizeEmbedUrl(src);
   let controller = null;
   let ready = false;
+  let apiAttempted = false;
+  let fallbackShown = false;
   let pendingPause = false;
-  let initialized = false;
   let apiReadyHandler = null;
   let fallbackTimer = null;
 
-  // The mount must NOT be display:none while Spotify initializes.
-  // It is visually hidden only with opacity/pointer-events in CSS.
-  function showApiPlayer() {
-    fallback.hidden = true;
-    fallback.setAttribute("aria-hidden", "true");
-    apiMount.hidden = false;
-    apiMount.setAttribute("aria-hidden", "false");
-    apiMount.classList.add("is-api-active");
+  function normalizeEmbedUrl(value) {
+    try {
+      const url = new URL(value, window.location.href);
+      url.searchParams.delete("utm_source");
+      url.searchParams.delete("si");
+      return url.toString();
+    } catch {
+      return value;
+    }
   }
 
-  function keepNativeFallback() {
-    fallback.hidden = false;
-    fallback.setAttribute("aria-hidden", "false");
-    apiMount.classList.remove("is-api-active");
-    apiMount.setAttribute("aria-hidden", "true");
+  function renderFallback() {
+    if (ready || fallbackShown) return;
+    fallbackShown = true;
+    if (fallbackTimer) clearTimeout(fallbackTimer);
+
+    mount.replaceChildren();
+    const iframe = document.createElement("iframe");
+    iframe.id = "spotify-native-fallback";
+    iframe.src = fallbackSrc;
+    iframe.width = "100%";
+    iframe.height = "450";
+    iframe.frameBorder = "0";
+    iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+    iframe.loading = "lazy";
+    iframe.title = "Spotify playlist";
+    mount.appendChild(iframe);
   }
 
-  function create(IFrameAPI) {
-    if (!IFrameAPI?.createController || initialized) return;
-    initialized = true;
+  function handlePlaybackStart() {
+    onPlaybackStart?.();
+  }
 
-    // Let Spotify initialize in a real layout box. It is visually transparent
-    // until the controller is confirmed ready.
-    apiMount.hidden = false;
+  function bindController(EmbedController) {
+    if (!EmbedController || controller) return;
+    controller = EmbedController;
+
+    controller.addListener("ready", () => {
+      ready = true;
+      fallbackShown = false;
+
+      // The controller has now created the one visible Embed in #spotify-embed.
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+
+      if (pendingPause) {
+        pendingPause = false;
+        try {
+          controller.pause();
+        } catch (error) {
+          console.warn("[Spotify] queued pause failed:", error);
+        }
+      }
+    });
+
+    controller.addListener("playback_started", handlePlaybackStart);
+    controller.addListener("playback_update", (event) => {
+      if (event?.data?.isPaused === false) handlePlaybackStart();
+    });
+  }
+
+  function createController(IFrameAPI) {
+    if (apiAttempted || !IFrameAPI?.createController) return;
+    apiAttempted = true;
 
     try {
-      IFrameAPI.createController(apiMount, {
-        width: "100%",
-        height: "450",
-        url: src,
-      }, (EmbedController) => {
-        controller = EmbedController;
-
-        controller.addListener("ready", () => {
-          ready = true;
-          if (fallbackTimer) {
-            clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-
-          showApiPlayer();
-
-          if (pendingPause) {
-            pendingPause = false;
-            try {
-              controller.pause();
-            } catch (err) {
-              console.warn("[Spotify] queued pause failed:", err);
-            }
-          }
-        });
-
-        controller.addListener("playback_started", () => {
-          onPlaybackStart?.();
-        });
-
-        controller.addListener("playback_update", (event) => {
-          if (event?.data?.isPaused === false) {
-            onPlaybackStart?.();
-          }
-        });
-      });
-    } catch (err) {
-      initialized = false;
-      keepNativeFallback();
-      console.warn("[Spotify] API failed; native player remains active.", err);
+      IFrameAPI.createController(
+        mount,
+        {
+          width: "100%",
+          height: "450",
+          url: fallbackSrc,
+        },
+        bindController
+      );
+    } catch (error) {
+      console.warn("[Spotify] IFrame API initialization failed; using native Embed.", error);
+      renderFallback();
     }
   }
 
-  // API may already have loaded before this module executes, or it may load
-  // afterwards. Supporting both paths avoids a race on slower Android devices.
+  // The API replaces the mount with the actual controller Embed.
+  // Keep the mount visible; do not hide it while waiting.
   if (window.__spotifyIframeAPI) {
-    create(window.__spotifyIframeAPI);
+    createController(window.__spotifyIframeAPI);
   } else {
-    apiReadyHandler = (event) => create(event.detail);
-    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler);
+    apiReadyHandler = (event) => {
+      apiReadyHandler = null;
+      createController(event.detail);
+    };
+    window.addEventListener("spotify-iframe-api-ready", apiReadyHandler, { once: true });
   }
 
-  // Give the API enough time to initialize, but never sacrifice the native
-  // player just because the API is unavailable.
+  // Do not leave the page empty if the API is blocked or unavailable.
   fallbackTimer = setTimeout(() => {
     if (!ready) {
-      keepNativeFallback();
-      console.warn("[Spotify] API did not become ready; native player stays active.");
+      if (apiReadyHandler) {
+        window.removeEventListener("spotify-iframe-api-ready", apiReadyHandler);
+        apiReadyHandler = null;
+      }
+      renderFallback();
     }
-    if (apiReadyHandler) {
-      window.removeEventListener("spotify-iframe-api-ready", apiReadyHandler);
-      apiReadyHandler = null;
-    }
-  }, 10000);
+  }, 8000);
 
   function pause() {
     if (controller && ready) {
       try {
         controller.pause();
         return true;
-      } catch (err) {
-        console.warn("[Spotify] pause failed:", err);
+      } catch (error) {
+        console.warn("[Spotify] pause failed:", error);
         return false;
       }
     }
 
-    // If the user starts background music before Spotify's controller is ready,
-    // remember the request and execute it immediately after controller ready.
-    pendingPause = true;
+    // If the controller is still initializing, remember the user's intent.
+    // Once the controller fires `ready`, the pause is issued immediately.
+    if (!fallbackShown) {
+      pendingPause = true;
+    }
     return false;
   }
 
