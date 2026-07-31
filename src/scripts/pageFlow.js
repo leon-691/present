@@ -93,11 +93,6 @@ export function initPageFlow() {
     incoming.classList.add("is-active");
     currentIndex = index;
 
-    // Sinyal sinkron segera setelah halaman aktif. Modul yang perlu reset
-    // state atau menyiapkan resource hanya saat halaman benar-benar dipilih
-    // dapat memakai event ini tanpa menunggu transitionend.
-    incoming.dispatchEvent(new CustomEvent("view:activated", { bubbles: true }));
-
     // Reset scroll internal (elemen ber-atribut data-scroll-container)
     // tiap kali halaman itu ditampilkan lagi, supaya selalu mulai dari atas.
     incoming.querySelector("[data-scroll-container]")?.scrollTo(0, 0);
