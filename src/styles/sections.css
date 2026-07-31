@@ -379,7 +379,8 @@ html.motion-reduced .gift-glow {
   filter: drop-shadow(var(--shadow-card));
 }
 
-#lagu iframe {
+#lagu iframe,
+#lagu .spotify-embed {
   display: block;
   width: 100%;
   border-radius: calc(var(--radius-md) - 4px);

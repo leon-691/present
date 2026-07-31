@@ -1,11 +1,23 @@
 /**
- * Widget musik mengambang. Browser modern memblokir autoplay audio
- * sebelum ada interaksi user -- jadi audio baru benar-benar mulai
- * saat tombol "buka" di landing page diklik (lihat main.js).
+ * Background music player.
+ *
+ * The background MP3 and the Spotify Embed are mutually exclusive:
+ * - starting the background music pauses Spotify;
+ * - starting Spotify pauses the background music.
+ *
+ * Spotify is controlled through its official iFrame API (see spotifyPlayer.js)
+ * rather than trying to access the cross-origin iframe directly.
  */
 export function initMusicPlayer({ src, title, subtitle }) {
   const pill = document.querySelector("[data-music-pill]");
-  if (!pill) return { unlock: () => {} };
+  if (!pill) {
+    return {
+      unlock: async () => {},
+      pause: () => {},
+      isPlaying: () => false,
+      setSpotifyController: () => {},
+    };
+  }
 
   const audio = new Audio(src);
   audio.loop = true;
@@ -18,39 +30,66 @@ export function initMusicPlayer({ src, title, subtitle }) {
   if (titleEl) titleEl.textContent = title;
   if (subtitleEl) subtitleEl.textContent = subtitle;
 
+  let spotifyController = null;
+  let spotifyReady = false;
+
   function setPlayingState(isPlaying) {
     pill.classList.toggle("is-paused", !isPlaying);
-    toggleBtn.setAttribute("aria-pressed", String(isPlaying));
-    toggleBtn.textContent = isPlaying ? "⏸" : "▶";
+    toggleBtn?.setAttribute("aria-pressed", String(isPlaying));
+    if (toggleBtn) toggleBtn.textContent = isPlaying ? "⏸" : "▶";
   }
 
-  toggleBtn.addEventListener("click", async () => {
-    if (audio.paused) {
-      try {
-        await audio.play();
-        setPlayingState(true);
-      } catch (err) {
-        // File belum ada / diblokir browser -- gagal senyap, tidak crash.
-        console.warn("Tidak bisa memutar audio:", err);
+  function pause() {
+    if (!audio.paused) audio.pause();
+    setPlayingState(false);
+  }
+
+  async function play() {
+    // Mutual exclusion: the local background audio always gives Spotify
+    // the right of way if Spotify is currently playing.
+    try {
+      if (spotifyController && spotifyReady) {
+        await Promise.resolve(spotifyController.pause());
       }
-    } else {
-      audio.pause();
+    } catch (err) {
+      console.warn("Tidak bisa menjeda Spotify Embed:", err);
+    }
+
+    try {
+      await audio.play();
+      setPlayingState(true);
+    } catch (err) {
+      console.warn("Tidak bisa memutar audio:", err);
       setPlayingState(false);
+    }
+  }
+
+  toggleBtn?.addEventListener("click", () => {
+    if (audio.paused) {
+      void play();
+    } else {
+      pause();
     }
   });
 
   setPlayingState(false);
 
-  // Dipanggil dari main.js tepat saat user pertama kali menekan tombol
-  // "buka" di landing page -- itulah user-gesture yang diizinkan browser.
-  async function unlock() {
-    try {
-      await audio.play();
-      setPlayingState(true);
-    } catch (err) {
-      console.warn("Autoplay diblokir, tunggu klik pada pil musik:", err);
-    }
+  function setSpotifyController(controller) {
+    spotifyController = controller;
+    spotifyReady = Boolean(controller);
   }
 
-  return { unlock };
+  async function unlock() {
+    // Do not force Spotify to pause here unless it is actually ready. The
+    // first user gesture is allowed to start the local background audio.
+    await play();
+  }
+
+  return {
+    unlock,
+    play,
+    pause,
+    isPlaying: () => !audio.paused,
+    setSpotifyController,
+  };
 }

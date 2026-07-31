@@ -185,13 +185,13 @@
         <div class="song-frame">
           <span class="washi-tape" style="--tape-rotate: -4deg; --tape-left: 28%;" aria-hidden="true"></span>
           <span class="washi-tape washi-tape--right" style="--tape-rotate: 5deg; --tape-left: 72%;" aria-hidden="true"></span>
-          <iframe
-            data-key-src="spotifyEmbedSrc"
+          <div
+            class="spotify-embed"
+            data-spotify-embed
+            data-height="300"
             title="Playlist Spotify"
-            style="height: 300px;"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          ></iframe>
+            aria-label="Playlist Spotify"
+          ></div>
         </div>
         <p class="section--song__note">Kalau player di atas kosong, ganti dulu link playlist-nya di <code>content.js</code>.</p>
         <button class="btn" data-next data-key="continueLabel">lanjut</button>

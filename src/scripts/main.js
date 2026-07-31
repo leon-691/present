@@ -2,6 +2,7 @@ import { content } from "../data/content.js";
 import { initPasswordGate } from "./passwordGate.js";
 import { initConfirmStep } from "./confirmStep.js";
 import { initMusicPlayer } from "./musicPlayer.js";
+import { initSpotifyEmbed } from "./spotifyPlayer.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
 import { initEnvelopeReveal } from "./envelopeReveal.js";
@@ -189,6 +190,20 @@ function init() {
         src: content.backgroundAudioSrc,
         title: content.backgroundAudioTitle,
         subtitle: content.backgroundAudioSubtitle,
+      });
+
+      // Spotify Embed dan background music adalah dua sumber audio yang
+      // saling eksklusif. Saat Spotify mulai bermain, MP3 langsung dijeda.
+      // Sebaliknya, saat MP3 dimainkan lewat tombol musik, Spotify dijeda.
+      void initSpotifyEmbed({
+        url: content.spotifyEmbedSrc,
+        onPlaybackStart: (spotifyController) => {
+          music.pause();
+          music.setSpotifyController(spotifyController);
+        },
+        onReady: (spotifyController) => {
+          music.setSpotifyController(spotifyController);
+        },
       });
     }],
     // Kado adalah halaman PERTAMA yang dilihat pengguna -- ketukannya
