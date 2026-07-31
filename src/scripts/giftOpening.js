@@ -30,9 +30,32 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
 
   let hasOpened = false;
 
+  // Decorative sparkles are generated once so they do not alter the gift
+  // contents or its interaction logic.
+  const sparkleField = document.createElement("div");
+  sparkleField.className = "gift-spark-field motion-decorative";
+  sparkleField.setAttribute("aria-hidden", "true");
+  const sparkleData = [
+    ["10%", "28%", "1.1", "0ms"], ["18%", "62%", "0.8", "420ms"],
+    ["28%", "20%", "1.35", "760ms"], ["72%", "18%", "0.9", "180ms"],
+    ["83%", "38%", "1.3", "620ms"], ["77%", "67%", "0.75", "980ms"],
+    ["61%", "78%", "1.05", "320ms"], ["35%", "82%", "0.85", "860ms"],
+  ];
+  sparkleData.forEach(([x, y, scale, delay]) => {
+    const spark = document.createElement("span");
+    spark.className = "gift-spark";
+    spark.style.left = x;
+    spark.style.top = y;
+    spark.style.setProperty("--spark-scale", scale);
+    spark.style.animationDelay = delay;
+    sparkleField.appendChild(spark);
+  });
+  scene.insertBefore(sparkleField, scene.firstChild);
+
   function resetGift() {
     hasOpened = false;
     trigger.classList.remove("is-opening");
+    sparkleField.classList.remove("is-opening");
     trigger.removeAttribute("aria-disabled");
   }
 
@@ -58,6 +81,7 @@ export function initGiftOpening({ onFirstInteraction, onComplete }) {
     }
 
     trigger.classList.add("is-opening");
+    sparkleField.classList.add("is-opening");
     pageEl?.classList.add("is-gift-zoom");
 
     // Jarak partikel dihitung dari diagonal layar (bukan angka piksel
