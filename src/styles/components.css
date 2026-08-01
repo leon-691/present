@@ -185,13 +185,6 @@
 }
 
 /* --- Password keypad --- */
-.keypad-clue {
-  font-family: var(--font-accent);
-  font-size: var(--fs-lg);
-  color: var(--color-text-soft);
-  margin-bottom: var(--space-sm);
-}
-
 .keypad-dots {
   display: flex;
   gap: 0.6em;
@@ -215,7 +208,7 @@
 }
 
 .keypad-dots.is-error .keypad-dots__dot {
-  border-color: #E85D5D;
+  border-color: var(--color-danger);
 }
 
 .keypad {

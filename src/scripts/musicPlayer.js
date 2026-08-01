@@ -2,10 +2,14 @@
  * Widget musik mengambang. Browser modern memblokir autoplay audio
  * sebelum ada interaksi user -- jadi audio baru benar-benar mulai
  * saat tombol "buka" di landing page diklik (lihat main.js).
+ *
+ * onPlay: dipanggil TIAP KALI audio ini mulai main (baik dari unlock()
+ * pertama maupun toggle manual) -- dipakai main.js utk menyuruh Spotify
+ * berhenti, supaya tidak dua-duanya bersahutan.
  */
-export function initMusicPlayer({ src, title, subtitle, onBeforePlay }) {
+export function initMusicPlayer({ src, title, subtitle, onPlay }) {
   const pill = document.querySelector("[data-music-pill]");
-  if (!pill) return { unlock: () => {} };
+  if (!pill) return { unlock: () => {}, pause: () => {} };
 
   const audio = new Audio(src);
   audio.loop = true;
@@ -24,20 +28,25 @@ export function initMusicPlayer({ src, title, subtitle, onBeforePlay }) {
     toggleBtn.textContent = isPlaying ? "⏸" : "▶";
   }
 
-  toggleBtn.addEventListener("click", async () => {
-    if (audio.paused) {
-      try {
-        onBeforePlay?.();
-        await audio.play();
-        setPlayingState(true);
-      } catch (err) {
-        // File belum ada / diblokir browser -- gagal senyap, tidak crash.
-        console.warn("Tidak bisa memutar audio:", err);
-      }
-    } else {
-      audio.pause();
-      setPlayingState(false);
+  async function play() {
+    try {
+      await audio.play();
+      setPlayingState(true);
+      onPlay?.();
+    } catch (err) {
+      // File belum ada / diblokir browser -- gagal senyap, tidak crash.
+      console.warn("Tidak bisa memutar audio:", err);
     }
+  }
+
+  function pause() {
+    audio.pause();
+    setPlayingState(false);
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    if (audio.paused) play();
+    else pause();
   });
 
   setPlayingState(false);
@@ -46,18 +55,11 @@ export function initMusicPlayer({ src, title, subtitle, onBeforePlay }) {
   // "buka" di landing page -- itulah user-gesture yang diizinkan browser.
   async function unlock() {
     try {
-      onBeforePlay?.();
       await audio.play();
       setPlayingState(true);
+      onPlay?.();
     } catch (err) {
       console.warn("Autoplay diblokir, tunggu klik pada pil musik:", err);
-    }
-  }
-
-  function pause() {
-    if (!audio.paused) {
-      audio.pause();
-      setPlayingState(false);
     }
   }
 

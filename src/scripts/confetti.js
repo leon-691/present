@@ -6,10 +6,20 @@ import { isMotionReduced } from "./motionPreference.js";
  * sengaja tidak dipakai berulang di tempat lain supaya tetap terasa spesial.
  */
 
-const COLORS = ["#3E63DD", "#6C8EF0", "#FFC85C", "#FFB4A8"];
+/** Ambil warna dari token desain saat ini (variables.css), bukan hex
+ * tertulis langsung -- supaya otomatis ikut berubah kalau palet di
+ * variables.css diganti, tidak perlu disunting dua tempat. */
+function getPaletteColors() {
+  const styles = getComputedStyle(document.documentElement);
+  const tokens = ["--color-primary", "--color-primary-dark", "--color-secondary", "--color-blush", "--color-sage"];
+  const colors = tokens.map((t) => styles.getPropertyValue(t).trim()).filter(Boolean);
+  return colors.length ? colors : ["#A84A63", "#D3A354"]; // jaring pengaman kalau token entah kenapa kosong
+}
 
 export function burstConfetti(targetEl, { count = 60 } = {}) {
   if (isMotionReduced()) return;
+
+  const colors = getPaletteColors();
 
   const canvas = document.createElement("canvas");
   canvas.setAttribute("aria-hidden", "true");
@@ -33,7 +43,7 @@ export function burstConfetti(targetEl, { count = 60 } = {}) {
     vx: (Math.random() - 0.5) * 14,
     vy: Math.random() * -12 - 4,
     size: Math.random() * 7 + 4,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    color: colors[Math.floor(Math.random() * colors.length)],
     rotation: Math.random() * 360,
     spin: (Math.random() - 0.5) * 20,
     life: 0,

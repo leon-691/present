@@ -31,6 +31,7 @@
   --color-sage: #7C8F6A;          /* hijau daun/tangkai -- dipakai ilustrasi bunga & daun */
   --color-sage-dark: #5C6E4B;
   --color-blush: #F0C3BE;         /* blush hangat: kelopak, dekorasi -- BUKAN dominan */
+  --color-danger: #E85D5D;        /* state error (mis. PIN salah) -- sengaja beda dari --color-primary supaya "salah" tidak tertukar makna dgn "terisi/aktif" */
 
   /* --- Netral pendukung --- */
   --color-border: #E6D3B0;

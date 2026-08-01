@@ -181,10 +181,11 @@
       <!-- 8. LAGU KENANGAN -->
       <section class="view view--blur" id="lagu">
         <h2 data-key="songTitle">lagu-lagu buat kamu</h2>
+        <p data-key="songSubtitle">cerita singkat di sini</p>
         <div class="song-frame">
           <span class="washi-tape" style="--tape-rotate: -4deg; --tape-left: 28%;" aria-hidden="true"></span>
           <span class="washi-tape washi-tape--right" style="--tape-rotate: 5deg; --tape-left: 72%;" aria-hidden="true"></span>
-          <div id="spotify-embed" class="spotify-embed" aria-label="Spotify playlist"></div>
+          <div class="song-frame__embed" data-spotify-embed></div>
         </div>
         <button class="btn" data-next data-key="continueLabel">lanjut</button>
       </section>
@@ -255,14 +256,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script>
-    window.onSpotifyIframeApiReady = (IFrameAPI) => {
-      window.__spotifyIframeAPI = IFrameAPI;
-      window.dispatchEvent(new CustomEvent("spotify-iframe-api-ready", { detail: IFrameAPI }));
-    };
-  </script>
-  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script type="module" src="src/scripts/main.js"></script>
-
 </body>
 </html>

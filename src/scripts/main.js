@@ -2,7 +2,7 @@ import { content } from "../data/content.js";
 import { initPasswordGate } from "./passwordGate.js";
 import { initConfirmStep } from "./confirmStep.js";
 import { initMusicPlayer } from "./musicPlayer.js";
-import { initSpotifyPlayer } from "./spotifyPlayer.js";
+import { initSpotifyEmbed } from "./spotifyEmbed.js";
 import { initPageFlow } from "./pageFlow.js";
 import { initLetterScrub } from "./letterScrub.js";
 import { initEnvelopeReveal } from "./envelopeReveal.js";
@@ -185,12 +185,19 @@ function init() {
         src: content.backgroundAudioSrc,
         title: content.backgroundAudioTitle,
         subtitle: content.backgroundAudioSubtitle,
-        onBeforePlay: () => spotify?.pause(),
+        // Spotify di-inisialisasi belakangan (step di bawah), tapi
+        // panah fungsi ini cuma benar2 DIPANGGIL nanti saat musik latar
+        // mulai main -- pada saat itu `spotify` sudah pasti terisi.
+        onPlay: () => spotify?.pause(),
       });
-
-      spotify = initSpotifyPlayer({
-        src: content.spotifyEmbedSrc,
-        onPlaybackStart: () => music?.pause(),
+    }],
+    ["spotify", () => {
+      // Sebaliknya: begitu Spotify mulai main, musik latar berhenti --
+      // supaya dua-duanya tidak bersahutan. Embed-nya sendiri baru
+      // benar2 dibuat nanti, saat halaman lagu pertama dikunjungi
+      // (lihat spotifyEmbed.js), bukan di sini.
+      spotify = initSpotifyEmbed(content.spotifyEmbedSrc, {
+        onPlay: () => music?.pause(),
       });
     }],
     // Kado adalah halaman PERTAMA yang dilihat pengguna -- ketukannya

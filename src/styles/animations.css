@@ -187,43 +187,6 @@ html.tier-low .view--blur.is-leaving {
   }
 }
 
-/* --- Animasi bunga pembuka --- */
-@keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.flower-intro {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 100;
-  overflow: hidden;
-}
-
-.flower-intro__piece {
-  position: absolute;
-  top: -12%;
-  opacity: 0;
-  animation-name: petal-fall;
-  animation-timing-function: ease-in;
-  animation-fill-mode: forwards;
-}
-
-@keyframes petal-fall {
-  0% {
-    opacity: 0;
-    transform: translateY(0) translateX(0) rotate(0deg);
-  }
-  12% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(115vh) translateX(var(--drift, 40px)) rotate(var(--spin, 180deg));
-  }
-}
-
 /* --- Ledakan/hembusan bunga (FOTO ASLI), titik asal & jumlah
    partikel ditentukan saat pemanggilan (lihat petalBurst.js) -- dipakai
    utk 2 momen: kado terbuka (giftOpening.js, meledak ke segala arah,

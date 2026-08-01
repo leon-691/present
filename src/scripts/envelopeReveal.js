@@ -130,7 +130,13 @@ export function initEnvelopeReveal() {
     hintEl?.classList.remove("is-hidden");
   }
 
-  scene.addEventListener("view:settled", resetScene);
+  // Pakai "view:activated" (sinkron, sebelum transisi masuk mulai
+  // diputar), bukan "view:settled" (baru setelah transisi selesai) --
+  // sama spt giftOpening.js, reset ini murni ganti class/atribut/flag,
+  // tidak butuh geometri final apa pun, jadi tidak perlu nunggu transisi
+  // kelar dulu. Kalau nunggu view:settled, amplop sempat kelihatan
+  // "sudah dibuka" sekejap SAAT halaman baru mulai muncul.
+  scene.addEventListener("view:activated", resetScene);
 
   // Enter/Space di kertas (role="button" selama fase "mengintip") --
   // <div> biasa tidak otomatis merespons keyboard spt <button> asli, jadi

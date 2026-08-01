@@ -93,18 +93,6 @@ a {
   border-radius: 4px;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* Page shell: satu "jendela" setinggi layar, isinya berpindah
    halaman (fade), bukan tumbuh mengikuti konten. Di desktop tampil
    sebagai kartu terpusat supaya tidak terlihat aneh saat melebar.
